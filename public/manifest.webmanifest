@@ -1,0 +1,17 @@
+{
+  "name": "PocketLive Canva Studio",
+  "short_name": "PocketLive",
+  "description": "Studio thiết kế overlay 9:16 kéo thả, điều khiển Live siêu nhẹ & Teleprompter đọc comment tự động.",
+  "start_url": "/?mode=live",
+  "display": "standalone",
+  "background_color": "#0b0e14",
+  "theme_color": "#4f46e5",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

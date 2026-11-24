@@ -1,0 +1,195 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+@layer base {
+  :root {
+    --font-sans: 'Plus Jakarta Sans', 'Be Vietnam Pro', system-ui, sans-serif;
+    --font-display: 'Be Vietnam Pro', 'Plus Jakarta Sans', sans-serif;
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: #0b0e14;
+    color: #f4f4f5;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-mono-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Subtle dark scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.22);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.42);
+}
+
+/* =========================================================================
+   COMMERCIAL 9:16 STAGE GLASSMORPHISM & BACKDROP PRIMITIVES
+   ========================================================================= */
+.stage-root {
+  --accent: #5b4fe8;
+  --accent-2: #8174f8;
+  --accent-soft: rgba(91, 79, 232, 0.16);
+  --accent-glow: rgba(91, 79, 232, 0.36);
+  --accent-contrast: #ffffff;
+  --glass-blur: 18px;
+  --glass-opacity: 0.68;
+
+  /* Light Frosted Glass */
+  --g-bg: rgba(255, 255, 255, var(--glass-opacity));
+  --g-bg-strong: rgba(255, 255, 255, min(0.94, calc(var(--glass-opacity) + 0.18)));
+  --g-border: rgba(255, 255, 255, 0.86);
+  --g-inner-hi: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  --g-shadow: 0 10px 28px rgba(15, 23, 42, 0.14), 0 2px 8px rgba(15, 23, 42, 0.06);
+  --g-text: #18181b;
+  --g-muted: #52525b;
+  --g-divider: rgba(24, 24, 27, 0.11);
+  --g-chip-bg: rgba(24, 24, 27, 0.07);
+  --g-chip-text: #27272a;
+}
+
+.stage-root.stage-glass-dark {
+  --g-bg: rgba(15, 20, 32, var(--glass-opacity));
+  --g-bg-strong: rgba(15, 20, 32, min(0.9, calc(var(--glass-opacity) + 0.18)));
+  --g-border: rgba(255, 255, 255, 0.22);
+  --g-inner-hi: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  --g-shadow: 0 14px 36px rgba(0, 0, 0, 0.44), 0 2px 10px rgba(0, 0, 0, 0.24);
+  --g-text: #ffffff;
+  --g-muted: rgba(255, 255, 255, 0.74);
+  --g-divider: rgba(255, 255, 255, 0.16);
+  --g-chip-bg: rgba(255, 255, 255, 0.13);
+  --g-chip-text: rgba(255, 255, 255, 0.94);
+}
+
+/* Performance mode: disables expensive backdrop-filter blur to keep GPU idle */
+.stage-root.stage-perf-mode {
+  --glass-blur: 0px;
+}
+
+.stage-root.stage-perf-mode .glass-surface,
+.stage-root.stage-perf-mode .glass-surface-strong {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.glass-surface {
+  background: var(--g-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(165%);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(165%);
+  border: 1px solid var(--g-border);
+  box-shadow: var(--g-shadow), var(--g-inner-hi);
+  color: var(--g-text);
+}
+
+.glass-surface-strong {
+  background: var(--g-bg-strong);
+  backdrop-filter: blur(calc(var(--glass-blur) + 4px)) saturate(175%);
+  -webkit-backdrop-filter: blur(calc(var(--glass-blur) + 4px)) saturate(175%);
+  border: 1px solid var(--g-border);
+  box-shadow: var(--g-shadow), var(--g-inner-hi);
+  color: var(--g-text);
+}
+
+.glass-accent-pill {
+  background: linear-gradient(135deg, var(--accent), var(--accent-2));
+  color: var(--accent-contrast);
+  box-shadow: 0 6px 16px var(--accent-glow), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.stage-glass-dark .accent-text-adaptive {
+  color: var(--accent-2);
+}
+.stage-glass-light .accent-text-adaptive {
+  color: var(--accent);
+}
+
+.mega-headline-text {
+  color: var(--accent);
+  -webkit-text-stroke: 1.4px rgba(255, 255, 255, 0.96);
+  paint-order: stroke fill;
+  text-shadow: 0 2px 0 rgba(255, 255, 255, 0.95), 0 6px 16px rgba(15, 23, 42, 0.22);
+}
+.stage-glass-dark .mega-headline-text {
+  color: #ffffff;
+  -webkit-text-stroke: 1px rgba(255, 255, 255, 0.28);
+  text-shadow: 0 3px 0 var(--accent), 0 10px 22px rgba(0, 0, 0, 0.5);
+}
+
+.editorial-headline-light {
+  color: #18181b;
+  text-shadow: 0 2px 12px rgba(255, 255, 255, 0.9), 0 1px 2px rgba(255, 255, 255, 0.85);
+}
+.stage-glass-dark .editorial-headline-light {
+  color: #ffffff;
+  text-shadow: 0 4px 16px rgba(0, 0, 0, 0.55);
+}
+
+/* Studio backdrops */
+.bg-white-studio {
+  background: radial-gradient(ellipse 90% 55% at 50% 8%, #ffffff 0%, #f5f4fb 46%, #e7eaf6 100%);
+}
+.bg-soft-gray {
+  background: radial-gradient(ellipse 85% 60% at 50% 18%, #e4e7ee 0%, #cfd5e2 55%, #b8c1d4 100%);
+}
+.bg-chroma-green {
+  background-color: #00ff00;
+}
+.bg-transparent-grid {
+  background-color: #181d27;
+  background-image:
+    linear-gradient(45deg, #242b3a 25%, transparent 25%),
+    linear-gradient(-45deg, #242b3a 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #242b3a 75%),
+    linear-gradient(-45deg, transparent 75%, #242b3a 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+}
+
+@keyframes pricePulse {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.035); }
+  100% { transform: scale(1); }
+}
+
+.animate-price-pulse {
+  animation: pricePulse 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes eventPopIn {
+  0% { opacity: 0; transform: translateY(-8px) scale(0.94); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.animate-event-pop {
+  animation: eventPopIn 0.32s cubic-bezier(0.2, 1.15, 0.35, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-price-pulse,
+  .animate-event-pop {
+    animation: none;
+  }
+}

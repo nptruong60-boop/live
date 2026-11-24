@@ -1,0 +1,6 @@
+{
+  "name": "PocketLive Canva Studio",
+  "description": "Studio thiết kế overlay livestream 9:16 kéo thả chuẩn Canva, điều khiển live siêu nhẹ, kết nối TikTok/OBS và màn hình đọc comment tự động cho điện thoại.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

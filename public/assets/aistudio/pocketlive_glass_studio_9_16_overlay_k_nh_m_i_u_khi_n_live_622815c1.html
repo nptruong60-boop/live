@@ -1,0 +1,2933 @@
+<!DOCTYPE html>
+<html lang="vi" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PocketLive Glass Studio 9:16 — Overlay Kính Mờ & Điều Khiển Live</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Be Vietnam Pro & Plus Jakarta Sans cho kiểu chữ thương mại tiếng Việt sắc nét -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,500;0,600;0,700;0,800;0,900;1,700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Plus Jakarta Sans', 'Be Vietnam Pro', 'system-ui', 'sans-serif'],
+            display: ['Be Vietnam Pro', 'Plus Jakarta Sans', 'sans-serif'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    /* =========================================================================
+       1. GLASSMORPHISM & COMMERCIAL DESIGN TOKENS
+       ========================================================================= */
+    :root {
+      --accent: #5B4FE8;
+      --accent-2: #8174F8;
+      --accent-soft: rgba(91, 79, 232, 0.14);
+      --accent-glow: rgba(91, 79, 232, 0.36);
+      --accent-contrast: #ffffff;
+
+      --glass-blur: 20px;
+      --glass-opacity: 0.66;
+
+      /* Light Frosted Glass Defaults */
+      --g-bg: rgba(255, 255, 255, var(--glass-opacity));
+      --g-bg-strong: rgba(255, 255, 255, min(0.92, calc(var(--glass-opacity) + 0.18)));
+      --g-border: rgba(255, 255, 255, 0.85);
+      --g-inner-hi: inset 0 1px 0 rgba(255, 255, 255, 0.95);
+      --g-shadow: 0 10px 30px rgba(15, 23, 42, 0.12), 0 2px 8px rgba(15, 23, 42, 0.06);
+      --g-text: #18181b;
+      --g-muted: #52525b;
+      --g-divider: rgba(24, 24, 27, 0.10);
+      --g-chip-bg: rgba(24, 24, 27, 0.06);
+      --g-chip-text: #27272a;
+      --g-notch-bg: rgba(255, 255, 255, 0.35);
+    }
+
+    /* Dark Smoked Glass Finish */
+    .stage-glass-dark {
+      --g-bg: rgba(15, 20, 32, var(--glass-opacity));
+      --g-bg-strong: rgba(15, 20, 32, min(0.88, calc(var(--glass-opacity) + 0.18)));
+      --g-border: rgba(255, 255, 255, 0.22);
+      --g-inner-hi: inset 0 1px 0 rgba(255, 255, 255, 0.22);
+      --g-shadow: 0 14px 36px rgba(0, 0, 0, 0.42), 0 2px 10px rgba(0, 0, 0, 0.22);
+      --g-text: #ffffff;
+      --g-muted: rgba(255, 255, 255, 0.72);
+      --g-divider: rgba(255, 255, 255, 0.16);
+      --g-chip-bg: rgba(255, 255, 255, 0.12);
+      --g-chip-text: rgba(255, 255, 255, 0.92);
+      --g-notch-bg: rgba(15, 20, 32, 0.35);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Plus Jakarta Sans', 'Be Vietnam Pro', system-ui, sans-serif;
+      background-color: #0b0e14;
+      color: #f4f4f5;
+      overflow-x: hidden;
+    }
+
+    /* Thanh cuộn tinh giản */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(161, 161, 170, 0.25); border-radius: 999px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(161, 161, 170, 0.45); }
+
+    /* =========================================================================
+       2. APPLE-GRADE FROSTED GLASS PRIMITIVES
+       ========================================================================= */
+    .glass-surface {
+      background: var(--g-bg);
+      backdrop-filter: blur(var(--glass-blur)) saturate(175%);
+      -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(175%);
+      border: 1px solid var(--g-border);
+      box-shadow: var(--g-shadow), var(--g-inner-hi);
+      color: var(--g-text);
+    }
+
+    .glass-surface-strong {
+      background: var(--g-bg-strong);
+      backdrop-filter: blur(calc(var(--glass-blur) + 4px)) saturate(185%);
+      -webkit-backdrop-filter: blur(calc(var(--glass-blur) + 4px)) saturate(185%);
+      border: 1px solid var(--g-border);
+      box-shadow: var(--g-shadow), var(--g-inner-hi);
+      color: var(--g-text);
+    }
+
+    .glass-accent-pill {
+      background: linear-gradient(135deg, var(--accent), var(--accent-2));
+      color: var(--accent-contrast);
+      box-shadow: 0 6px 18px var(--accent-glow), inset 0 1px 0 rgba(255, 255, 255, 0.42);
+    }
+
+    .accent-text { color: var(--accent); }
+    .stage-glass-dark .accent-text-adaptive { color: var(--accent-2); }
+    .stage-glass-light .accent-text-adaptive { color: var(--accent); }
+
+    /* Kiểu tiêu đề Siêu Sale Nổi Bật (viền trắng sạch + đổ bóng mềm chuẩn thương mại) */
+    .mega-headline-text {
+      color: var(--accent);
+      -webkit-text-stroke: 1.5px rgba(255, 255, 255, 0.96);
+      paint-order: stroke fill;
+      text-shadow:
+        0 2px 0 rgba(255, 255, 255, 0.95),
+        0 6px 18px rgba(15, 23, 42, 0.22);
+    }
+    .stage-glass-dark .mega-headline-text {
+      color: #ffffff;
+      -webkit-text-stroke: 1px rgba(255, 255, 255, 0.3);
+      text-shadow:
+        0 3px 0 var(--accent),
+        0 10px 24px rgba(0, 0, 0, 0.48);
+    }
+
+    .editorial-headline-light {
+      color: #18181b;
+      text-shadow: 0 2px 14px rgba(255, 255, 255, 0.9), 0 1px 2px rgba(255, 255, 255, 0.8);
+    }
+    .stage-glass-dark .editorial-headline-light {
+      color: #ffffff;
+      text-shadow: 0 4px 18px rgba(0, 0, 0, 0.55);
+    }
+
+    /* Voucher Ticket Notches (khuyết 2 bên tinh tế) */
+    .voucher-ticket {
+      position: relative;
+    }
+    .voucher-ticket::before,
+    .voucher-ticket::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: var(--g-notch-bg);
+      border: 1px solid var(--g-border);
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+    .voucher-ticket::before { left: -5px; }
+    .voucher-ticket::after { right: -5px; }
+
+    /* =========================================================================
+       3. STUDIO REALISTIC BACKDROPS (LÀM NỔI BẬT ĐỘ MỜ TRONG SUỐT CỦA KÍNH)
+       ========================================================================= */
+    .bg-white-studio {
+      background:
+        radial-gradient(ellipse 90% 55% at 50% 8%, #ffffff 0%, #f5f4fb 45%, #e7eaf6 100%);
+      position: relative;
+    }
+    .bg-white-studio::before {
+      /* Ánh sáng cửa sổ mềm & vệt phản chiếu kiến trúc studio để lớp blur thực tế */
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle 140px at 84% 28%, var(--accent-soft) 0%, transparent 72%),
+        radial-gradient(circle 160px at 16% 68%, var(--accent-soft) 0%, transparent 72%),
+        linear-gradient(125deg, rgba(255,255,255,0.8) 0%, transparent 38%, rgba(255,255,255,0.45) 62%, transparent 100%);
+      pointer-events: none;
+    }
+    .bg-white-studio::after {
+      /* Mặt bàn studio mịn ở dưới tạo chiều sâu */
+      content: '';
+      position: absolute;
+      inset-x: 0;
+      bottom: 0;
+      height: 28%;
+      background: linear-gradient(180deg, transparent 0%, rgba(148, 163, 184, 0.14) 55%, rgba(148, 163, 184, 0.24) 100%);
+      pointer-events: none;
+    }
+
+    .bg-soft-gray {
+      background:
+        radial-gradient(ellipse 85% 60% at 50% 18%, #e4e7ee 0%, #cfd5e2 55%, #b8c1d4 100%);
+      position: relative;
+    }
+    .bg-soft-gray::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle 150px at 80% 30%, var(--accent-soft) 0%, transparent 70%),
+        radial-gradient(circle 140px at 20% 78%, rgba(255, 255, 255, 0.45) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .bg-chroma-green {
+      background-color: #00ff00;
+    }
+
+    .bg-transparent-grid {
+      background-color: #1f2430;
+      background-image:
+        linear-gradient(45deg, #2a3142 25%, transparent 25%),
+        linear-gradient(-45deg, #2a3142 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #2a3142 75%),
+        linear-gradient(-45deg, transparent 75%, #2a3142 75%);
+      background-size: 20px 20px;
+      background-position: 0 0, 0 10px, 10px -10px, -10px 0;
+    }
+
+    /* =========================================================================
+       4. SILKY 60FPS ANIMATIONS
+       ========================================================================= */
+    .spring-in {
+      animation: springIn 0.42s cubic-bezier(0.22, 1.16, 0.36, 1) forwards;
+    }
+    .fade-out-down {
+      animation: fadeOutDown 0.22s ease forwards;
+    }
+    @keyframes springIn {
+      0% { opacity: 0; transform: translateY(14px) scale(0.95); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes fadeOutDown {
+      0% { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(12px) scale(0.96); }
+    }
+
+    .price-shimmer-pulse {
+      animation: pricePulse 0.72s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    @keyframes pricePulse {
+      0% { transform: scale(1); }
+      35% { transform: scale(1.035); box-shadow: 0 0 0 3px var(--accent-glow), var(--g-shadow); }
+      100% { transform: scale(1); }
+    }
+
+    .shimmer-sweep::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(110deg, transparent 18%, rgba(255, 255, 255, 0.6) 50%, transparent 82%);
+      transform: translateX(-140%);
+      animation: sweepAcross 0.78s ease-out forwards;
+      pointer-events: none;
+    }
+    @keyframes sweepAcross {
+      to { transform: translateX(140%); }
+    }
+
+    .flash-soft-pulse {
+      animation: softPulse 1.1s ease-in-out infinite alternate;
+    }
+    @keyframes softPulse {
+      0% { box-shadow: 0 0 0 0 var(--accent-glow), var(--g-shadow); }
+      100% { box-shadow: 0 0 22px 2px var(--accent-glow), var(--g-shadow); }
+    }
+
+    .event-pill-in {
+      animation: eventIn 0.42s cubic-bezier(0.2, 1.2, 0.35, 1) forwards;
+    }
+    .event-pill-out {
+      animation: eventOut 0.28s ease forwards;
+    }
+    @keyframes eventIn {
+      0% { opacity: 0; transform: translateY(-10px) scale(0.92); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes eventOut {
+      0% { opacity: 1; transform: translateY(0) scale(1); }
+      100% { opacity: 0; transform: translateY(-8px) scale(0.95); }
+    }
+
+    .marquee-track {
+      display: flex;
+      width: max-content;
+      animation: marqueeScroll 18s linear infinite;
+    }
+    @keyframes marqueeScroll {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    /* =========================================================================
+       5. CLEAN VIEW & SEPARATE OUTPUT WINDOW
+       ========================================================================= */
+    body.clean-view #control-panel,
+    body.clean-view #stage-toolbar {
+      display: none !important;
+    }
+    body.clean-view #stage-column {
+      padding: 0 !important;
+      background: #000000 !important;
+    }
+    body.clean-view #live-stage {
+      height: 100vh !important;
+      max-height: 100vh !important;
+      border-radius: 0 !important;
+      border: 0 !important;
+      box-shadow: none !important;
+    }
+    body.clean-view #clean-exit-btn {
+      display: flex !important;
+    }
+
+    body.output-mode #control-panel,
+    body.output-mode #stage-toolbar,
+    body.output-mode #clean-exit-btn {
+      display: none !important;
+    }
+    body.output-mode #stage-column {
+      padding: 0 !important;
+      background: #000000 !important;
+    }
+    body.output-mode #live-stage {
+      height: 100vh !important;
+      max-height: 100vh !important;
+      border-radius: 0 !important;
+      border: 0 !important;
+      box-shadow: none !important;
+    }
+  </style>
+</head>
+<body class="h-screen w-screen overflow-hidden flex flex-col lg:flex-row bg-[#0b0e14] text-zinc-100 select-none">
+
+  <!-- TOAST THÔNG BÁO (KHÔNG DÙNG ALERT/CONFIRM) -->
+  <div id="toast-root" class="fixed top-4 left-1/2 -translate-x-1/2 z-[120] flex flex-col gap-2 pointer-events-none w-[92%] max-w-md"></div>
+
+  <!-- Nút thoát Clean View (mờ 20%, di chuột vào sáng rõ) -->
+  <div id="clean-exit-btn" class="hidden fixed top-4 right-4 z-[110] opacity-20 hover:opacity-100 transition-opacity duration-200">
+    <button onclick="setCleanView(false)" class="px-4 py-2.5 rounded-xl bg-zinc-900/90 hover:bg-zinc-800 text-white border border-white/15 shadow-2xl text-xs font-semibold backdrop-blur-md cursor-pointer">
+      ✕ Thoát Clean View (ESC)
+    </button>
+  </div>
+
+  <!-- =========================================================================
+       CỘT TRÁI: STUDIO STAGE 9:16 (CAMERA UVC + GLASSMORPHISM OVERLAYS)
+       ========================================================================= -->
+  <main id="stage-column" class="flex-1 flex flex-col items-center justify-between p-2.5 lg:p-4 h-full min-h-0 bg-[radial-gradient(ellipse_at_top,_#171c28_0%,_#0b0e14_70%)] relative overflow-hidden">
+
+    <!-- Thanh công cụ Camera & Preview trên cùng -->
+    <header id="stage-toolbar" class="w-full max-w-[980px] flex flex-wrap items-center justify-between gap-2 bg-zinc-900/80 border border-white/10 rounded-2xl px-3 py-2 backdrop-blur-md shadow-xl shrink-0 z-20">
+      <!-- Camera UVC (DJI Osmo Pocket 4P) -->
+      <div class="flex items-center gap-1.5 flex-wrap">
+        <button id="btn-cam" onclick="toggleCamera()" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 transition cursor-pointer">
+          <span id="cam-dot" class="w-2 h-2 rounded-full bg-zinc-500"></span>
+          <span id="cam-btn-text">Bật Camera</span>
+        </button>
+
+        <select id="cam-select" onchange="switchCamera(this.value)" title="Chọn Camera UVC (DJI Osmo Pocket 4P)" class="bg-zinc-950/90 text-zinc-200 text-xs rounded-xl px-2.5 py-1.5 border border-white/10 focus:outline-none focus:border-indigo-400 max-w-[165px] truncate cursor-pointer">
+          <option value="">Nguồn Camera UVC...</option>
+        </select>
+
+        <button id="btn-mirror" onclick="toggleMirror()" title="Lật gương camera" class="px-2.5 py-1.5 rounded-xl text-xs font-medium bg-zinc-800/90 hover:bg-zinc-700 text-zinc-300 border border-white/10 transition cursor-pointer">
+          ⇄ Lật gương
+        </button>
+      </div>
+
+      <!-- Nền mẫu Studio + TikTok Safe Zone + Output -->
+      <div class="flex items-center gap-1.5 flex-wrap">
+        <div class="flex items-center bg-zinc-950/90 rounded-xl p-0.5 border border-white/10 text-[11px]">
+          <button onclick="setBackdrop('white-studio')" id="bg-white-studio" class="px-2 py-1 rounded-lg font-medium transition cursor-pointer">Phòng Trắng</button>
+          <button onclick="setBackdrop('soft-gray')" id="bg-soft-gray" class="px-2 py-1 rounded-lg font-medium transition cursor-pointer">Xám Nhẹ</button>
+          <button onclick="setBackdrop('chroma-green')" id="bg-chroma-green" class="px-2 py-1 rounded-lg font-medium transition cursor-pointer">Phông Xanh</button>
+          <button onclick="setBackdrop('transparent-grid')" id="bg-transparent-grid" class="px-2 py-1 rounded-lg font-medium transition cursor-pointer">Trong Suốt</button>
+        </div>
+
+        <button id="btn-safe-top" onclick="toggleSafeZone()" title="Khung an toàn giao diện TikTok (Phím S)" class="px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 border border-white/10 transition cursor-pointer">
+          Safe TikTok [S]
+        </button>
+
+        <button onclick="setCleanView(true)" title="Xem toàn màn hình sạch sẽ" class="px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-white/10 hover:bg-white/20 text-white border border-white/15 transition cursor-pointer">
+          ⛶ Clean View
+        </button>
+
+        <button onclick="openOutputWindow()" title="Mở cửa sổ Output 9:16 rời đồng bộ thời gian thực cho OBS / TikTok LIVE Studio" class="px-2.5 py-1.5 rounded-xl text-xs font-semibold bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-200 border border-indigo-400/35 transition cursor-pointer">
+          ↗ Output rời
+        </button>
+      </div>
+    </header>
+
+    <!-- Khung hiển thị dọc 9:16 tự co giãn trọn vẹn -->
+    <div class="flex-1 w-full flex items-center justify-center min-h-0 py-2">
+      <div id="live-stage" class="stage-glass-light relative aspect-[9/16] h-full max-h-[calc(100vh-108px)] max-w-full rounded-[30px] overflow-hidden border-[3px] border-zinc-700/70 shadow-[0_28px_85px_rgba(0,0,0,0.75)] bg-zinc-950 transition-all duration-300">
+
+        <!-- LỚP 1: NỀN DEMO STUDIO -->
+        <div id="stage-backdrop" class="absolute inset-0 bg-white-studio transition-all duration-300">
+          <!-- Minh họa ánh sáng kiến trúc tinh tế khi chưa bật camera -->
+          <div id="studio-hint" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none px-6 text-center pb-10">
+            <div class="w-12 h-12 rounded-2xl bg-black/[0.04] border border-black/[0.06] flex items-center justify-center mb-2">
+              <svg class="w-5 h-5 text-zinc-400" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+              </svg>
+            </div>
+            <p class="text-[10.5px] font-bold tracking-wider uppercase text-zinc-400">Phòng Trắng Studio</p>
+            <p class="text-[9.5px] text-zinc-400/90 mt-0.5 max-w-[190px] leading-relaxed">Cắm DJI Osmo Pocket 4P qua USB-C & bấm <strong>Bật Camera</strong></p>
+          </div>
+        </div>
+
+        <!-- LỚP 1B: VIDEO CAMERA UVC THẬT -->
+        <video id="webcam-video" autoplay playsinline muted class="hidden absolute inset-0 w-full h-full object-cover z-[2]"></video>
+
+        <!-- LỚP 2: KHUNG PNG TRONG SUỐT TÙY CHỈNH (NẾU MEDIA UPLOAD) -->
+        <img id="custom-frame-img" alt="Custom PNG Frame" class="hidden absolute inset-0 w-full h-full object-fill pointer-events-none z-[12]" />
+
+        <!-- LỚP 3: CANVAS 60FPS (HIỆU ỨNG RƠI TINH TẾ & SỰ KIỆN) -->
+        <canvas id="fx-canvas" class="absolute inset-0 w-full h-full pointer-events-none z-[15]"></canvas>
+
+        <!-- ===================================================================
+             5 CỤM OVERLAY KÍNH MỜ THƯƠNG MẠI (CHỪA TRỐNG 7.5% ĐỈNH & 45% GIỮA)
+             =================================================================== -->
+
+        <!-- ZONE 1: TOP CAMPAIGN HEADER (DƯỚI THANH TIKTOK TOP BAR) -->
+        <div id="zone-header" class="absolute inset-x-0 top-[7.6%] px-3.5 z-[22] pointer-events-none"></div>
+
+        <!-- ZONE 2: UPPER-LEFT FLOATING MICRO-BADGES (HOST & FOLLOW) -->
+        <div id="zone-left-badges" class="absolute top-[25.5%] left-[3%] w-[34%] z-[22] flex flex-col gap-1.5 pointer-events-none"></div>
+
+        <!-- ZONE 3: UPPER-RIGHT VERTICAL VOUCHER & DEAL STACK + FLASH COUNTDOWN -->
+        <div id="zone-right-vouchers" class="absolute top-[24%] right-[3%] w-[28.5%] z-[23] flex flex-col gap-1.5 pointer-events-none"></div>
+
+        <!-- FLOATING EVENT ALERT PILL (HIỆN KHI BẤM SỰ KIỆN LIVE, KHÔNG CHE MẶT) -->
+        <div id="zone-event-alert" class="absolute top-[20.5%] inset-x-3 z-[30] flex justify-center pointer-events-none"></div>
+
+        <!-- ZONE 4: LOWER PRODUCT SHOWCASE (3 BỐ CỤC: SPOTLIGHT / KỆ 3 DEAL / VIÊN THUỐC) -->
+        <div id="zone-product-showcase" class="absolute inset-x-0 z-[25] px-3 pointer-events-none transition-all duration-300" style="bottom: 10.5%;"></div>
+
+        <!-- ZONE 5: BOTTOM 3-COLUMN TRUST BAR (HOẶC TICKER MỎNG) -->
+        <div id="zone-bottom-bar" class="absolute bottom-[2.2%] inset-x-[3%] z-[24] pointer-events-none"></div>
+
+        <!-- LỚP KHUNG AN TOÀN TIKTOK LIVE THỰC TẾ (PHÍM S) -->
+        <div id="safe-zone-overlay" class="hidden absolute inset-0 z-[40] pointer-events-none">
+          <!-- Top Bar: Avatar + Follow + Viewer Count -->
+          <div class="absolute top-[1.8%] left-[3%] right-[3%] h-[5.4%] flex items-center justify-between gap-2">
+            <div class="h-full px-2 rounded-full bg-black/50 border border-dashed border-rose-400/90 flex items-center gap-1.5 w-[56%]">
+              <div class="w-4 h-4 rounded-full bg-rose-400/70 shrink-0"></div>
+              <span class="text-[8px] font-bold text-white truncate">Kênh TikTok Gốc</span>
+              <span class="ml-auto px-1.5 py-0.5 rounded-full bg-rose-500 text-[7px] font-bold text-white">Follow</span>
+            </div>
+            <div class="h-full px-2 rounded-full bg-black/50 border border-dashed border-rose-400/90 flex items-center gap-1.5">
+              <span class="text-[8px] font-bold text-white">👁 2.4K</span>
+              <span class="text-[9px] text-white/80">✕</span>
+            </div>
+          </div>
+          <div class="absolute top-[7.5%] inset-x-0 border-t border-dashed border-rose-400/60 flex justify-center">
+            <span class="text-[7.5px] font-bold text-rose-200 bg-rose-950/85 px-1.5 py-0.5 rounded-b">▲ Vùng TikTok Top Bar (7.5%)</span>
+          </div>
+
+          <!-- Center Face Clear Zone -->
+          <div class="absolute top-[27%] left-1/2 -translate-x-1/2 w-[38%] h-[25%] rounded-[50%] border border-dashed border-emerald-400/55 flex items-center justify-center">
+            <span class="text-[8px] font-semibold text-emerald-100 bg-emerald-950/70 px-2 py-0.5 rounded-full">Vùng mặt Host (Trống)</span>
+          </div>
+
+          <!-- Lower-left Comment Stream -->
+          <div class="absolute bottom-[9%] left-[3%] w-[58%] h-[19%] rounded-xl bg-sky-500/15 border border-dashed border-sky-400/80 p-2 flex flex-col justify-end gap-1">
+            <div class="text-[7.5px] text-white bg-black/45 rounded px-1.5 py-0.5 w-fit">Chị Hương: Chốt mã 01 cho chị nha!</div>
+            <div class="text-[7.5px] text-white bg-black/45 rounded px-1.5 py-0.5 w-fit">Ngọc Vy: Giá trên live quá hời 🔥</div>
+            <span class="text-[7.5px] font-bold uppercase text-sky-200 bg-sky-950/85 px-1.5 py-0.5 rounded w-fit">Luồng bình luận TikTok</span>
+          </div>
+
+          <!-- Bottom-right Cart & Gift Icons -->
+          <div class="absolute bottom-[1.8%] right-[3%] w-[31%] h-[15%] rounded-xl bg-amber-500/15 border border-dashed border-amber-400/80 flex flex-col items-center justify-end pb-1.5 gap-1">
+            <div class="flex items-center gap-1">
+              <span class="w-5 h-5 rounded-md bg-amber-400/90 text-zinc-950 flex items-center justify-center text-[9px]">🛒</span>
+              <span class="w-5 h-5 rounded-full bg-black/55 text-white flex items-center justify-center text-[9px]">🎁</span>
+              <span class="w-5 h-5 rounded-full bg-black/55 text-white flex items-center justify-center text-[9px]">↗</span>
+            </div>
+            <span class="text-[7px] font-bold text-amber-200 bg-amber-950/85 px-1.5 py-0.5 rounded">Giỏ hàng & Quà</span>
+          </div>
+
+          <!-- Bottom comment input bar -->
+          <div class="absolute bottom-[1.8%] left-[3%] w-[58%] h-[5.4%] rounded-full bg-black/45 border border-dashed border-zinc-400/70 flex items-center px-2.5">
+            <span class="text-[7.5px] text-zinc-300">Thêm bình luận...</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- =========================================================================
+       CỘT PHẢI: BẢNG ĐIỀU KHIỂN 2 CHẾ ĐỘ (NHÂN VIÊN LIVE | MEDIA ADMIN)
+       ========================================================================= -->
+  <aside id="control-panel" class="w-full lg:w-[455px] xl:w-[495px] h-[50vh] lg:h-screen bg-[#11151e] border-t lg:border-t-0 lg:border-l border-white/10 flex flex-col shrink-0 shadow-2xl z-30">
+
+    <!-- Header Studio + Chuyển chế độ -->
+    <div class="px-4 pt-3.5 pb-3 border-b border-white/10 bg-[#0d1017] shrink-0 space-y-2.5">
+      <div class="flex items-center justify-between gap-2">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div id="brand-chip-dot" class="w-8 h-8 rounded-xl flex items-center justify-center text-white font-display font-extrabold text-xs shadow-lg shrink-0" style="background: linear-gradient(135deg, var(--accent), var(--accent-2));">
+            GL
+          </div>
+          <div class="min-w-0">
+            <h1 class="font-display font-extrabold text-sm text-white leading-tight truncate">PocketLive <span class="text-indigo-300">Glass Studio</span></h1>
+            <p class="text-[10.5px] text-zinc-400 truncate">Overlay Kính Mờ 9:16 • Điều khiển 1 Chạm</p>
+          </div>
+        </div>
+        <span class="px-2 py-1 rounded-lg bg-emerald-500/12 border border-emerald-500/25 text-[10px] font-semibold text-emerald-300 shrink-0">● 60fps</span>
+      </div>
+
+      <!-- Segmented Workspace Switcher -->
+      <div class="grid grid-cols-2 gap-1 bg-zinc-900/95 p-1 rounded-xl border border-white/10">
+        <button id="tab-live" onclick="switchMode('live')" class="py-2 px-2 rounded-lg text-xs font-bold transition cursor-pointer bg-zinc-800 text-white shadow">
+          🎬 Điều khiển Live
+        </button>
+        <button id="tab-admin" onclick="switchMode('admin')" class="py-2 px-2 rounded-lg text-xs font-bold transition cursor-pointer text-zinc-400 hover:text-white">
+          🎨 Media Admin
+        </button>
+      </div>
+    </div>
+
+    <!-- =======================================================================
+         CHẾ ĐỘ 1: ĐIỀU KHIỂN LIVE (SIÊU GỌN CHO NHÂN VIÊN KINH DOANH)
+         ======================================================================= -->
+    <div id="panel-live" class="flex-1 overflow-y-auto p-3.5 space-y-3.5">
+
+      <!-- 1. CHỌN GIAO DIỆN NHANH + KÍNH SÁNG/TỐI + TỰ MIX TINH TẾ -->
+      <section class="bg-zinc-900/65 border border-white/[0.08] rounded-2xl p-3 space-y-2.5">
+        <div class="flex items-center justify-between gap-2">
+          <div>
+            <h2 class="font-display text-xs font-bold uppercase tracking-wider text-zinc-100">1. Chọn Giao Diện Nhanh</h2>
+            <p class="text-[10px] text-zinc-400">6 bộ phối kính mờ tinh tế & nút Tự Mix</p>
+          </div>
+          <button onclick="smartMixRefined()" class="px-2.5 py-1.5 rounded-xl text-[11px] font-bold bg-gradient-to-r from-indigo-500 to-violet-500 hover:from-indigo-400 hover:to-violet-400 text-white shadow-md transition active:scale-95 cursor-pointer shrink-0">
+            🎲 Tự Mix Tinh Tế
+          </button>
+        </div>
+
+        <!-- 1-click Light / Dark Frosted Glass Switch -->
+        <div class="grid grid-cols-2 gap-1.5 bg-zinc-950/75 p-1 rounded-xl border border-white/[0.07]">
+          <button id="live-finish-light" onclick="setGlassFinish('light')" class="py-1.5 rounded-lg text-[11px] font-bold transition cursor-pointer">
+            ☀️ Kính Trong Sáng
+          </button>
+          <button id="live-finish-dark" onclick="setGlassFinish('dark')" class="py-1.5 rounded-lg text-[11px] font-bold transition cursor-pointer">
+            🌙 Kính Khói Mờ
+          </button>
+        </div>
+
+        <!-- Swatches Preset -->
+        <div id="live-presets-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-1.5"></div>
+      </section>
+
+      <!-- 2. CHUYỂN SẢN PHẨM (1–9, 0 ẨN, H NHẤN GIÁ) -->
+      <section class="bg-zinc-900/65 border border-white/[0.08] rounded-2xl p-3 space-y-2.5">
+        <div class="flex items-center justify-between gap-2">
+          <div>
+            <h2 class="font-display text-xs font-bold uppercase tracking-wider text-zinc-100">2. Chuyển Sản Phẩm</h2>
+            <p class="text-[10px] text-zinc-400">Phím 1–9 bật/đổi • 0 Ẩn • H Nhấn giá</p>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <button onclick="triggerPriceHighlight()" class="px-2.5 py-1.5 rounded-xl text-[11px] font-bold bg-amber-500/18 hover:bg-amber-500/28 text-amber-300 border border-amber-400/30 transition active:scale-95 cursor-pointer">
+              ✨ Nhấn Giá
+            </button>
+            <button onclick="hideActiveProduct()" class="px-2.5 py-1.5 rounded-xl text-[11px] font-semibold bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-white/10 transition active:scale-95 cursor-pointer">
+              Ẩn [0]
+            </button>
+          </div>
+        </div>
+        <div id="live-product-list" class="space-y-1.5"></div>
+      </section>
+
+      <!-- 3. FLASH SALE (F) & SỰ KIỆN LIVE -->
+      <section class="bg-zinc-900/65 border border-white/[0.08] rounded-2xl p-3 space-y-2.5">
+        <div class="flex items-center justify-between">
+          <h2 class="font-display text-xs font-bold uppercase tracking-wider text-zinc-100">3. Flash Sale [F] & Sự Kiện Live</h2>
+          <span id="panel-flash-time" class="font-mono text-xs font-bold text-rose-400">03:00</span>
+        </div>
+
+        <div class="flex items-center gap-1.5">
+          <button onclick="setFlashDuration(60)" class="flex-1 py-1 rounded-lg text-[11px] font-semibold bg-zinc-950 hover:bg-zinc-800 text-zinc-200 border border-white/10 cursor-pointer">1p</button>
+          <button onclick="setFlashDuration(180)" class="flex-1 py-1 rounded-lg text-[11px] font-semibold bg-zinc-950 hover:bg-zinc-800 text-zinc-200 border border-white/10 cursor-pointer">3p</button>
+          <button onclick="setFlashDuration(300)" class="flex-1 py-1 rounded-lg text-[11px] font-semibold bg-zinc-950 hover:bg-zinc-800 text-zinc-200 border border-white/10 cursor-pointer">5p</button>
+          <button onclick="setFlashDuration(600)" class="flex-1 py-1 rounded-lg text-[11px] font-semibold bg-zinc-950 hover:bg-zinc-800 text-zinc-200 border border-white/10 cursor-pointer">10p</button>
+        </div>
+
+        <div class="grid grid-cols-3 gap-1.5">
+          <button id="btn-flash-main" onclick="toggleFlashSale()" class="col-span-2 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white shadow transition active:scale-95 cursor-pointer">
+            ⚡ Bật Flash Sale
+          </button>
+          <button onclick="resetFlashSale()" class="py-2 rounded-xl text-xs font-semibold bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-white/10 cursor-pointer">
+            Đặt lại
+          </button>
+        </div>
+
+        <!-- Tên khách tùy chọn -->
+        <div class="flex items-center gap-1.5 pt-1">
+          <input id="event-buyer-input" type="text" placeholder="Tên khách chốt đơn / tặng quà (để trống tự lấy mẫu)..." class="flex-1 bg-zinc-950/90 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-indigo-400" />
+          <button onclick="document.getElementById('event-buyer-input').value=''" class="px-2.5 py-1.5 rounded-xl bg-zinc-800 text-xs text-zinc-400 cursor-pointer">✕</button>
+        </div>
+
+        <!-- 6 nút sự kiện Live -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+          <button onclick="triggerLiveEvent('order')" class="p-2 rounded-xl text-[11px] font-semibold bg-orange-500/14 hover:bg-orange-500/24 text-orange-200 border border-orange-400/25 transition active:scale-95 cursor-pointer text-left">🔥 Nổ Đơn Chốt</button>
+          <button onclick="triggerLiveEvent('gift')" class="p-2 rounded-xl text-[11px] font-semibold bg-amber-500/14 hover:bg-amber-500/24 text-amber-200 border border-amber-400/25 transition active:scale-95 cursor-pointer text-left">🎁 Tặng Quà VIP</button>
+          <button onclick="triggerLiveEvent('hearts')" class="p-2 rounded-xl text-[11px] font-semibold bg-pink-500/14 hover:bg-pink-500/24 text-pink-200 border border-pink-400/25 transition active:scale-95 cursor-pointer text-left">💗 Bão Tim</button>
+          <button onclick="triggerLiveEvent('flash')" class="p-2 rounded-xl text-[11px] font-semibold bg-rose-500/14 hover:bg-rose-500/24 text-rose-200 border border-rose-400/25 transition active:scale-95 cursor-pointer text-left">⚡ Mở Flash Sale</button>
+          <button onclick="triggerLiveEvent('lixi')" class="p-2 rounded-xl text-[11px] font-semibold bg-red-500/14 hover:bg-red-500/24 text-red-200 border border-red-400/25 transition active:scale-95 cursor-pointer text-left">🧧 Tung Lì Xì</button>
+          <button onclick="triggerLiveEvent('fireworks')" class="p-2 rounded-xl text-[11px] font-semibold bg-indigo-500/18 hover:bg-indigo-500/28 text-indigo-200 border border-indigo-400/30 transition active:scale-95 cursor-pointer text-left">✨ Pháo Hoa Mốc</button>
+        </div>
+      </section>
+
+      <!-- 4. BẬT/TẮT NHANH CÁC CỤM OVERLAY -->
+      <section class="bg-zinc-900/65 border border-white/[0.08] rounded-2xl p-3 space-y-2">
+        <h2 class="font-display text-xs font-bold uppercase tracking-wider text-zinc-100">4. Bật/Tắt Nhanh Các Cụm</h2>
+        <div id="quick-toggles-grid" class="grid grid-cols-2 gap-1.5"></div>
+      </section>
+    </div>
+
+    <!-- =======================================================================
+         CHẾ ĐỘ 2: MEDIA ADMIN (THIẾT KẾ CHẤT LIỆU KÍNH, NỘI DUNG & KỊCH BẢN)
+         ======================================================================= -->
+    <div id="panel-admin" class="hidden flex-1 overflow-y-auto p-3.5 space-y-3.5">
+
+      <!-- A. CHẤT LIỆU KÍNH MỜ & BỐ CỤC THƯƠNG MẠI -->
+      <section class="bg-zinc-900/65 border border-white/[0.08] rounded-2xl p-3 space-y-3">
+        <h2 class="font-display text-xs font-bold uppercase tracking-wider text-zinc-100">A. Chất Liệu Kính & Bố Cục</h2>
+
+        <!-- Light vs Dark Glass -->
+        <div class="grid grid-cols-2 gap-1.5 bg-zinc-950/75 p-1 rounded-xl border border-white/10">
+          <button id="admin-finish-light" onclick="setGlassFinish('light')" class="py-1.5 rounded-lg text-[11px] font-bold transition cursor-pointer">☀️ Kính Trong Sáng</button>
+          <button id="admin-finish-dark" onclick="setGlassFinish('dark')" class="py-1.5 rounded-lg text-[11px] font-bold transition cursor-pointer">🌙 Kính Khói Mờ</button>
+        </div>
+
+        <!-- Sliders: Blur & Opacity & Product Vertical Position -->
+        <div class="grid grid-cols-3 gap-2">
+          <div class="bg-zinc-950/70 rounded-xl p-2 border border-white/5">
+            <div class="flex justify-between text-[10px] text-zinc-300 mb-1">
+              <span>Độ mờ Blur</span>
+              <span id="val-blur" class="font-mono text-indigo-300">20px</span>
+            </div>
+            <input id="rng-blur" type="range" min="8" max="32" value="20" oninput="updateGlassSliders()" class="w-full accent-indigo-400 cursor-pointer" />
+          </div>
+          <div class="bg-zinc-950/70 rounded-xl p-2 border border-white/5">
+            <div class="flex justify-between text-[10px] text-zinc-300 mb-1">
+              <span>Độ đục kính</span>
+              <span id="val-opacity" class="font-mono text-indigo-300">66%</span>
+            </div>
+            <input id="rng-opacity" type="range" min="30" max="85" value="66" oninput="updateGlassSliders()" class="w-full accent-indigo-400 cursor-pointer" />
+          </div>
+          <div class="bg-zinc-950/70 rounded-xl p-2 border border-white/5">
+            <div class="flex justify-between text-[10px] text-zinc-300 mb-1">
+              <span>Vị trí thẻ SP</span>
+              <span id="val-card-pos" class="font-mono text-indigo-300">10%</span>
+            </div>
+            <input id="rng-card-pos" type="range" min="8" max="34" value="10" oninput="updateGlassSliders()" class="w-full accent-indigo-400 cursor-pointer" />
+          </div>
+        </div>
+
+        <!-- Accent Swatches + Custom Color Picker -->
+        <div class="flex items-center justify-between bg-zinc-950/70 rounded-xl px-3 py-2 border border-white/5 gap-2">
+          <span class="text-[11px] text-zinc-300 font-medium shrink-0">Màu điểm nhấn:</span>
+          <div class="flex items-center gap-1.5 flex-wrap justify-end">
+            <div id="admin-accent-swatches" class="flex items-center gap-1.5"></div>
+            <label title="Tự chọn màu thương hiệu" class="w-6 h-6 rounded-full border border-white/25 overflow-hidden cursor-pointer flex items-center justify-center bg-zinc-800">
+              <input id="in-custom-accent" type="color" onchange="setCustomAccent(this.value)" class="w-8 h-8 cursor-pointer border-0 bg-transparent" />
+            </label>
+          </div>
+        </div>
+
+        <!-- Header Style (4 styles) -->
+        <div>
+          <div class="text-[10.5px] font-semibold text-zinc-400 mb-1.5">Kiểu Tiêu đề Chiến dịch (Zone 1):</div>
+          <div id="admin-header-styles" class="grid grid-cols-2 gap-1.5"></div>
+        </div>
+
+        <!-- Product Showcase Layout (3 layouts) -->
+        <div>
+          <div class="text-[10.5px] font-semibold text-zinc-400 mb-1.5">Bố cục Kệ Sản phẩm (Zone 4):</div>
+          <div id="admin-card-layouts" class="grid grid-cols-3 gap-1.5"></div>
+        </div>
+
+        <!-- Bottom Bar Mode -->
+        <div>
+          <div class="text-[10.5px] font-semibold text-zinc-400 mb-1.5">Thanh Quyền lợi Dưới cùng (Zone 5):</div>
+          <div id="admin-bottom-modes" class="grid grid-cols-3 gap-1.5"></div>
+        </div>
+      </section>
+
+      <!-- B. CHỈNH NỘI DUNG CÁC CỤM OVERLAY -->
+      <section class="bg-zinc-900/65 border border-white/[0.08] rounded-2xl p-3 space-y-2.5">
+        <h2 class="font-display text-xs font-bold uppercase tracking-wider text-zinc-100">B. Chỉnh Nội Dung Các Cụm</h2>
+
+        <!-- Brand & Campaign -->
+        <div class="space-y-1.5">
+          <div class="flex items-center gap-2">
+            <div id="preview-logo" class="w-9 h-9 rounded-xl bg-zinc-950 border border-white/10 flex items-center justify-center overflow-hidden text-[9px] text-zinc-500 shrink-0">Logo</div>
+            <input id="in-shop-name" type="text" oninput="syncContentInputs()" placeholder="Tên thương hiệu..." class="flex-1 bg-zinc-950 border border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-400" />
+            <label class="px-2.5 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-white/10 text-[10.5px] font-semibold text-zinc-200 cursor-pointer shrink-0">
+              Logo
+              <input type="file" accept="image/*" onchange="uploadImageAsset(event, 'brandLogo', 180, true)" class="hidden" />
+            </label>
+            <button onclick="clearImageAsset('brandLogo')" class="px-2 py-1.5 rounded-xl bg-zinc-950 border border-white/10 text-xs text-zinc-400 cursor-pointer">✕</button>
+          </div>
+
+          <div class="grid grid-cols-2 gap-1.5">
+            <input id="in-campaign-title" type="text" oninput="syncContentInputs()" placeholder="Tiêu đề chính (SIÊU SALE...)" class="bg-zinc-950 border border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-400" />
+            <input id="in-campaign-sub" type="text" oninput="syncContentInputs()" placeholder="Phụ đề ưu đãi..." class="bg-zinc-950 border border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-400" />
+          </div>
+        </div>
+
+        <!-- Zone 2: Left Host & Follow -->
+        <div class="pt-1 border-t border-white/[0.06] space-y-1.5">
+          <div class="text-[10px] font-semibold text-zinc-400">Cụm Trái (Thông tin Host & Follow):</div>
+          <div class="grid grid-cols-2 gap-1.5">
+            <input id="in-host-name" type="text" oninput="syncContentInputs()" placeholder="HOST: MINH ANH" class="bg-zinc-950 border border-white/10 rounded-xl px-2.5 py-1.5 text-[11px] text-white" />
+            <input id="in-host-sub" type="text" oninput="syncContentInputs()" placeholder="Tư vấn & Chốt đơn" class="bg-zinc-950 border border-white/10 rounded-xl px-2.5 py-1.5 text-[11px] text-white" />
+            <input id="in-follow-title" type="text" oninput="syncContentInputs()" placeholder="FOLLOW SHOP" class="bg-zinc-950 border border-white/10 rounded-xl px-2.5 py-1.5 text-[11px] text-white" />
+            <input id="in-follow-sub" type="text" oninput="syncContentInputs()" placeholder="Nhận quà đơn 299K" class="bg-zinc-950 border border-white/10 rounded-xl px-2.5 py-1.5 text-[11px] text-white" />
+          </div>
+        </div>
+
+        <!-- Zone 3: Right 3 Voucher Cards -->
+        <div class="pt-1 border-t border-white/[0.06] space-y-1.5">
+          <div class="text-[10px] font-semibold text-zinc-400">Cụm Phải (3 Thẻ Voucher / Quà tặng):</div>
+          <div class="grid grid-cols-2 gap-1.5">
+            <input id="in-v1-top" type="text" oninput="syncContentInputs()" placeholder="VOUCHER LIVE" class="bg-zinc-950 border border-white/10 rounded-xl px-2.5 py-1.5 text-[11px] text-white" />
+            <input id="in-v1-val" type="text" oninput="syncContentInputs()" placeholder="GIẢM 50%" class="bg-zinc-950 border border-white/10 rounded-xl px-2.5 py-1.5 text-[11px] text-white" />
+            <input id="in-v2-top" type="text" oninput="syncContentInputs()" placeholder="MUA 1 TẶNG 3" class="bg-zinc-950 border border-white/10 rounded-xl px-2.5 py-1.5 text-[11px] text-white" />
+            <input id="in-v2-val" type="text" oninput="syncContentInputs()" placeholder="Quà kèm đơn" class="bg-zinc-950 border border-white/10 rounded-xl px-2.5 py-1.5 text-[11px] text-white" />
+            <input id="in-v3-top" type="text" oninput="syncContentInputs()" placeholder="QUÀ ĐƠN 299K" class="bg-zinc-950 border border-white/10 rounded-xl px-2.5 py-1.5 text-[11px] text-white" />
+            <input id="in-v3-val" type="text" oninput="syncContentInputs()" placeholder="Tặng SRM Mini" class="bg-zinc-950 border border-white/10 rounded-xl px-2.5 py-1.5 text-[11px] text-white" />
+          </div>
+        </div>
+
+        <!-- Zone 5: Bottom 3 Trust Items / Ticker -->
+        <div class="pt-1 border-t border-white/[0.06] space-y-1.5">
+          <div class="text-[10px] font-semibold text-zinc-400">Thanh Dưới cùng (3 Quyền lợi / Chữ chạy):</div>
+          <div class="grid grid-cols-3 gap-1.5">
+            <input id="in-trust-1" type="text" oninput="syncContentInputs()" class="bg-zinc-950 border border-white/10 rounded-xl px-2 py-1.5 text-[11px] text-white" />
+            <input id="in-trust-2" type="text" oninput="syncContentInputs()" class="bg-zinc-950 border border-white/10 rounded-xl px-2 py-1.5 text-[11px] text-white" />
+            <input id="in-trust-3" type="text" oninput="syncContentInputs()" class="bg-zinc-950 border border-white/10 rounded-xl px-2 py-1.5 text-[11px] text-white" />
+          </div>
+          <input id="in-ticker-text" type="text" oninput="syncContentInputs()" placeholder="Chữ chạy (khi chọn chế độ Ticker)..." class="w-full bg-zinc-950 border border-white/10 rounded-xl px-2.5 py-1.5 text-[11px] text-zinc-200" />
+        </div>
+      </section>
+
+      <!-- C. HIỆU ỨNG RƠI TINH TẾ & KHUNG PNG TRONG SUỐT -->
+      <section class="bg-zinc-900/65 border border-white/[0.08] rounded-2xl p-3 space-y-2.5">
+        <h2 class="font-display text-xs font-bold uppercase tracking-wider text-zinc-100">C. Hiệu Ứng Rơi & Khung PNG Riêng</h2>
+
+        <div id="admin-ambient-grid" class="grid grid-cols-3 gap-1.5"></div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <div class="bg-zinc-950/70 rounded-xl p-2 border border-white/5">
+            <div class="flex justify-between text-[10px] text-zinc-300 mb-1">
+              <span>Mật độ hạt</span>
+              <span id="val-p-density" class="font-mono text-indigo-300">22</span>
+            </div>
+            <input id="rng-p-density" type="range" min="6" max="55" value="22" oninput="updateAmbientSliders()" class="w-full accent-indigo-400 cursor-pointer" />
+          </div>
+          <div class="bg-zinc-950/70 rounded-xl p-2 border border-white/5">
+            <div class="flex justify-between text-[10px] text-zinc-300 mb-1">
+              <span>Độ trong hiệu ứng</span>
+              <span id="val-p-opacity" class="font-mono text-indigo-300">75%</span>
+            </div>
+            <input id="rng-p-opacity" type="range" min="20" max="100" value="75" oninput="updateAmbientSliders()" class="w-full accent-indigo-400 cursor-pointer" />
+          </div>
+        </div>
+
+        <!-- Custom Particle Emoji / PNG -->
+        <div id="admin-custom-particle-box" class="hidden bg-zinc-950/75 border border-white/10 rounded-xl p-2.5 space-y-2">
+          <input id="in-custom-emojis" type="text" oninput="syncCustomEmojis(this.value)" placeholder="Gõ Emoji rơi (VD: ✨ 🌸 🫧 ⭐)" class="w-full bg-zinc-900 border border-white/10 rounded-lg px-2.5 py-1.5 text-xs text-white" />
+          <div class="flex items-center gap-2">
+            <div id="preview-p-png" class="w-8 h-8 rounded-lg bg-zinc-900 border border-white/10 flex items-center justify-center overflow-hidden text-[9px] text-zinc-500 shrink-0">PNG</div>
+            <label class="flex-1 py-1.5 px-2.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-[11px] font-semibold text-zinc-200 text-center cursor-pointer">
+              Tải Icon PNG rơi riêng
+              <input type="file" accept="image/png,image/webp,image/svg+xml" onchange="uploadImageAsset(event, 'customParticlePng', 128, true)" class="hidden" />
+            </label>
+            <button onclick="clearImageAsset('customParticlePng')" class="px-2 py-1.5 rounded-lg bg-zinc-900 text-xs text-zinc-400 cursor-pointer">✕</button>
+          </div>
+        </div>
+
+        <!-- Custom Full 9:16 Transparent PNG Frame -->
+        <div class="flex items-center gap-2 pt-1">
+          <div id="preview-frame-png" class="w-9 h-9 rounded-xl bg-zinc-950 border border-white/10 flex items-center justify-center overflow-hidden text-[9px] text-zinc-500 shrink-0">9:16</div>
+          <label class="flex-1 py-1.5 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-white/10 text-[11px] font-semibold text-zinc-200 text-center cursor-pointer transition">
+            🧩 Tải Khung PNG Trong Suốt 9:16 (Tùy chọn)
+            <input type="file" accept="image/png,image/webp" onchange="uploadImageAsset(event, 'customFramePng', 1080, true)" class="hidden" />
+          </label>
+          <button onclick="clearImageAsset('customFramePng')" class="px-2.5 py-1.5 rounded-xl bg-zinc-950 border border-white/10 text-xs text-zinc-400 cursor-pointer">✕</button>
+        </div>
+      </section>
+
+      <!-- D. QUẢN LÝ SẢN PHẨM -->
+      <section class="bg-zinc-900/65 border border-white/[0.08] rounded-2xl p-3 space-y-2.5">
+        <div class="flex items-center justify-between">
+          <h2 id="prod-form-title" class="font-display text-xs font-bold uppercase tracking-wider text-zinc-100">D. Danh Mục Sản Phẩm (<span id="admin-prod-count">0</span>)</h2>
+          <button id="btn-cancel-edit" onclick="resetProductForm()" class="hidden text-[11px] text-rose-400 hover:underline cursor-pointer">Hủy sửa</button>
+        </div>
+
+        <input type="hidden" id="edit-prod-id" value="" />
+        <div class="grid grid-cols-3 gap-1.5">
+          <input id="f-code" type="text" placeholder="Mã (MÃ 05)" class="bg-zinc-950 border border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-white" />
+          <input id="f-name" type="text" placeholder="Tên sản phẩm..." class="col-span-2 bg-zinc-950 border border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-white" />
+        </div>
+        <input id="f-tags" type="text" placeholder="2 điểm nổi bật (ngăn bằng dấu • hoặc ,)" class="w-full bg-zinc-950 border border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-white" />
+        <div class="grid grid-cols-2 gap-1.5">
+          <input id="f-orig" type="number" min="0" step="1000" placeholder="Giá gốc (VNĐ)" class="bg-zinc-950 border border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-white" />
+          <input id="f-live" type="number" min="0" step="1000" placeholder="Giá Live (VNĐ) *" class="bg-zinc-950 border border-white/10 rounded-xl px-2.5 py-1.5 text-xs text-white" />
+        </div>
+        <div class="flex items-center gap-2">
+          <div id="f-photo-preview" class="w-10 h-10 rounded-xl bg-zinc-950 border border-white/10 flex items-center justify-center overflow-hidden text-[9px] text-zinc-500 shrink-0">Mẫu</div>
+          <label class="flex-1 py-1.5 px-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-white/10 text-[11px] font-semibold text-zinc-200 text-center cursor-pointer">
+            📁 Chọn ảnh SP (Hỗ trợ PNG tách nền)
+            <input id="f-photo-file" type="file" accept="image/*" onchange="handleProductImageUpload(event)" class="hidden" />
+          </label>
+          <button onclick="clearProductFormPhoto()" class="px-2.5 py-1.5 rounded-xl bg-zinc-950 border border-white/10 text-xs text-zinc-400 cursor-pointer">✕</button>
+        </div>
+        <button onclick="saveProductForm()" class="w-full py-2 rounded-xl text-xs font-bold text-white shadow transition active:scale-[0.99] cursor-pointer" style="background: linear-gradient(135deg, var(--accent), var(--accent-2));">
+          + Lưu sản phẩm vào kịch bản
+        </button>
+
+        <div id="admin-product-list" class="space-y-1.5 pt-1"></div>
+      </section>
+
+      <!-- E. LƯU PRESET & XUẤT / NHẬP KỊCH BẢN .JSON -->
+      <section class="bg-zinc-900/65 border border-white/[0.08] rounded-2xl p-3 space-y-2.5">
+        <div class="flex items-center justify-between">
+          <h2 class="font-display text-xs font-bold uppercase tracking-wider text-zinc-100">E. Lưu Giao Diện & Sao Lưu JSON</h2>
+          <span class="text-[10px] text-emerald-400">● Tự lưu</span>
+        </div>
+
+        <div class="flex gap-1.5">
+          <input id="in-preset-label" type="text" placeholder="Đặt tên Preset cho nhân viên (VD: Live Skincare 12/12)..." class="flex-1 bg-zinc-950 border border-white/10 rounded-xl px-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-indigo-400" />
+          <button onclick="saveCurrentAsPreset()" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white cursor-pointer shrink-0">💾 Lưu</button>
+        </div>
+
+        <div id="admin-saved-presets" class="space-y-1"></div>
+
+        <div class="grid grid-cols-2 gap-1.5 pt-1">
+          <button onclick="exportJSON()" class="py-2 rounded-xl text-xs font-semibold bg-zinc-800 hover:bg-zinc-700 text-white border border-white/10 cursor-pointer">⬇️ Xuất .JSON</button>
+          <label class="py-2 rounded-xl text-xs font-semibold bg-zinc-800 hover:bg-zinc-700 text-white border border-white/10 cursor-pointer text-center">
+            ⬆️ Nạp .JSON
+            <input type="file" accept=".json,application/json" onchange="importJSON(event)" class="hidden" />
+          </label>
+        </div>
+
+        <button id="btn-reset-defaults" onclick="handleResetDefaults()" class="w-full py-1.5 rounded-xl text-[11px] font-semibold bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/25 cursor-pointer">
+          ↺ Khôi phục mặc định ban đầu
+        </button>
+      </section>
+    </div>
+
+    <!-- Footer Phím tắt -->
+    <footer class="px-3.5 py-2 border-t border-white/10 bg-[#0d1017] text-[10px] text-zinc-400 flex flex-wrap items-center justify-between gap-1 shrink-0">
+      <span><kbd class="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-200 font-mono">1-9</kbd> SP</span>
+      <span><kbd class="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-200 font-mono">0</kbd> Ẩn</span>
+      <span><kbd class="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-200 font-mono">H</kbd> Nhấn giá</span>
+      <span><kbd class="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-200 font-mono">F</kbd> Flash</span>
+      <span><kbd class="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-200 font-mono">S</kbd> Safe</span>
+      <span><kbd class="px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-200 font-mono">ESC</kbd> Thoát</span>
+    </footer>
+  </aside>
+
+  <!-- =========================================================================
+       APPLICATION ENGINE (GLASSMORPHISM STATE + 60FPS CANVAS + REALTIME SYNC)
+       ========================================================================= -->
+  <script>
+    /* -------------------------------------------------------------------------
+       1. CURATED PRESETS, ACCENT SWATCHES & REALISTIC SAMPLE PRODUCTS
+       ------------------------------------------------------------------------- */
+    const STORAGE_KEY = 'pocketlive_glass_studio_v1';
+    const SYNC_CHANNEL_NAME = 'pocketlive_glass_sync_v1';
+    const IS_OUTPUT_MODE = new URLSearchParams(window.location.search).get('mode') === 'output';
+
+    const ACCENT_SWATCHES = [
+      { label: 'Indigo Tinh Khiết', hex: '#5B4FE8', hex2: '#8174F8' },
+      { label: 'Rose Boutique',     hex: '#E14B82', hex2: '#F472A0' },
+      { label: 'Champagne Gold',    hex: '#D4A534', hex2: '#F2CA66' },
+      { label: 'Sunny Coral',       hex: '#F26B2E', hex2: '#FB923C' },
+      { label: 'Festive Crimson',   hex: '#C92A3E', hex2: '#E85568' },
+      { label: 'Fresh Emerald',     hex: '#109A72', hex2: '#34C79B' },
+    ];
+
+    const BUILTIN_PRESETS = [
+      {
+        id: 'studio-pure',
+        name: 'Studio Tinh Khiết',
+        swatch: '#5B4FE8',
+        tag: 'Sáng • Sạch',
+        config: {
+          glassFinish: 'light',
+          glassBlur: 20,
+          glassOpacity: 66,
+          accentColor: '#5B4FE8',
+          accentColor2: '#8174F8',
+          headerStyle: 'editorial',
+          cardLayout: 'spotlight',
+          bottomBarMode: 'trust-3',
+          ambientType: 'none',
+          campaignTitle: 'SIÊU SALE THÁNG 11',
+          campaignSub: 'Chăm Da Khoa Học • Ưu Đãi Độc Quyền',
+        },
+      },
+      {
+        id: 'rose-glass',
+        name: 'Rose Glass',
+        swatch: '#E14B82',
+        tag: 'Mỹ phẩm • Kệ 3',
+        config: {
+          glassFinish: 'light',
+          glassBlur: 20,
+          glassOpacity: 68,
+          accentColor: '#E14B82',
+          accentColor2: '#F472A0',
+          headerStyle: 'mega-sale',
+          cardLayout: 'shelf-3',
+          bottomBarMode: 'trust-3',
+          ambientType: 'sparkle',
+          ambientDensity: 18,
+          campaignTitle: 'GIẢM ĐẾN 50%',
+          campaignSub: 'Live Beauty Special • Quà Độc Quyền',
+        },
+      },
+      {
+        id: 'obsidian-blur',
+        name: 'Obsidian Blur',
+        swatch: '#E5B84B',
+        tag: 'Kính khói • Sang',
+        config: {
+          glassFinish: 'dark',
+          glassBlur: 22,
+          glassOpacity: 50,
+          accentColor: '#E5B84B',
+          accentColor2: '#F6D57E',
+          headerStyle: 'editorial',
+          cardLayout: 'spotlight',
+          bottomBarMode: 'trust-3',
+          ambientType: 'bokeh',
+          ambientDensity: 18,
+          campaignTitle: 'PRIVATE LIVE DEAL',
+          campaignSub: 'Ưu Đãi Độc Quyền Dành Riêng Khách Live',
+        },
+      },
+      {
+        id: 'sunny-glow',
+        name: 'Sunny Glow',
+        swatch: '#F26B2E',
+        tag: 'Năng động • Gọn',
+        config: {
+          glassFinish: 'light',
+          glassBlur: 18,
+          glassOpacity: 70,
+          accentColor: '#F26B2E',
+          accentColor2: '#FB923C',
+          headerStyle: 'mega-sale',
+          cardLayout: 'slim-pill',
+          bottomBarMode: 'trust-3',
+          ambientType: 'none',
+          campaignTitle: 'SĂN DEAL RẠNG RỠ',
+          campaignSub: 'Giảm Sốc Hôm Nay • Freeship Toàn Quốc',
+        },
+      },
+      {
+        id: 'noel-frost',
+        name: 'Noel Băng Giá',
+        swatch: '#C92A3E',
+        tag: 'Tuyết mịn • Noel',
+        config: {
+          glassFinish: 'light',
+          glassBlur: 22,
+          glassOpacity: 66,
+          accentColor: '#C92A3E',
+          accentColor2: '#E85568',
+          headerStyle: 'editorial',
+          cardLayout: 'spotlight',
+          bottomBarMode: 'trust-3',
+          ambientType: 'snow',
+          ambientDensity: 30,
+          campaignTitle: 'GIÁNG SINH AN LÀNH',
+          campaignSub: 'Quà Noel Độc Quyền • Giảm Đến 50%',
+        },
+      },
+      {
+        id: 'tet-heritage',
+        name: 'Tết Tinh Hoa',
+        swatch: '#F4B942',
+        tag: 'Hoa rơi • Tết',
+        config: {
+          glassFinish: 'dark',
+          glassBlur: 20,
+          glassOpacity: 54,
+          accentColor: '#E13D44',
+          accentColor2: '#F4B942',
+          headerStyle: 'mega-sale',
+          cardLayout: 'spotlight',
+          bottomBarMode: 'trust-3',
+          ambientType: 'petals',
+          ambientDensity: 26,
+          campaignTitle: 'KHAI XUÂN RƯỚC LỘC',
+          campaignSub: 'Tặng Lì Xì Đầu Năm • Deal Hời Khai Lộc',
+        },
+      },
+    ];
+
+    const HEADER_OPTIONS = [
+      { id: 'editorial',    label: 'Editorial Thương Hiệu' },
+      { id: 'mega-sale',    label: 'Siêu Sale Nổi Bật' },
+      { id: 'minimal-pill', label: 'Viên Thuốc Tối Giản' },
+      { id: 'hidden',       label: 'Ẩn Header (Sạch nhất)' },
+    ];
+
+    const CARD_LAYOUT_OPTIONS = [
+      { id: 'spotlight', label: 'Thẻ Tiêu Điểm' },
+      { id: 'shelf-3',   label: 'Kệ 3 Deal Ngang' },
+      { id: 'slim-pill', label: 'Thanh Viên Thuốc' },
+    ];
+
+    const BOTTOM_BAR_OPTIONS = [
+      { id: 'trust-3', label: '3 Quyền lợi' },
+      { id: 'ticker',  label: 'Chữ chạy mỏng' },
+      { id: 'hidden',  label: 'Ẩn thanh dưới' },
+    ];
+
+    const AMBIENT_OPTIONS = [
+      { id: 'none',    icon: '○',  label: 'Tắt (Sạch)' },
+      { id: 'snow',    icon: '❄️', label: 'Tuyết mịn' },
+      { id: 'petals',  icon: '🌸', label: 'Hoa đào/mai' },
+      { id: 'bokeh',   icon: '✦',  label: 'Bokeh nhẹ' },
+      { id: 'sparkle', icon: '✨', label: 'Lấp lánh' },
+      { id: 'custom',  icon: '🎨', label: 'Icon riêng' },
+    ];
+
+    const SAMPLE_BUYERS = ['Chị Linh', 'Ngọc Hân', 'Minh Thư', 'Bảo Trâm', 'Thanh Hà', 'Hoàng Anh', 'Khánh Vy', 'Thu Thảo'];
+
+    const DEFAULT_PRODUCTS = [
+      {
+        id: 'p1',
+        code: 'MÃ 01',
+        name: 'Serum Hyaluronic B5 Phục Hồi Cấp Ẩm Sâu 50ml',
+        tags: ['Chuẩn da nhạy cảm', 'Tặng 2 gói sample'],
+        originalPrice: 490000,
+        livePrice: 289000,
+        svgType: 'serum-amber',
+        customImage: '',
+      },
+      {
+        id: 'p2',
+        code: 'MÃ 02',
+        name: 'Kem Chống Nắng Phổ Rộng Kiềm Dầu SPF50+ 50ml',
+        tags: ['Không nâng tone ảo', 'Freeship Live'],
+        originalPrice: 360000,
+        livePrice: 215000,
+        svgType: 'sunscreen',
+        customImage: '',
+      },
+      {
+        id: 'p3',
+        code: 'MÃ 03',
+        name: 'Combo Sữa Rửa Mặt & Toner Làm Sạch Dịu Nhẹ',
+        tags: ['Mua 1 tặng 1 mini', 'Độc quyền trên Live'],
+        originalPrice: 520000,
+        livePrice: 299000,
+        svgType: 'cleanser-duo',
+        customImage: '',
+      },
+      {
+        id: 'p4',
+        code: 'MÃ 04',
+        name: 'Xịt Khóa Nền Căng Bóng Rose Glow Mist 100ml',
+        tags: ['Bền lớp makeup 16h', 'Hương hoa hồng dịu'],
+        originalPrice: 320000,
+        livePrice: 189000,
+        svgType: 'mist',
+        customImage: '',
+      },
+    ];
+
+    function createDefaultState() {
+      return {
+        activePresetId: 'studio-pure',
+        glassFinish: 'light', // 'light' | 'dark'
+        glassBlur: 20,
+        glassOpacity: 66,
+        accentColor: '#5B4FE8',
+        accentColor2: '#8174F8',
+
+        headerStyle: 'editorial', // 'editorial' | 'mega-sale' | 'minimal-pill' | 'hidden'
+        cardLayout: 'spotlight',  // 'spotlight' | 'shelf-3' | 'slim-pill'
+        bottomBarMode: 'trust-3', // 'trust-3' | 'ticker' | 'hidden'
+        cardBottomPct: 10.5,
+
+        // Zone visibility toggles
+        showHeader: true,
+        showLeftBadges: true,
+        showRightVouchers: true,
+        showBottomBar: true,
+        showSafeZone: false,
+
+        // Editable texts
+        shopName: 'LUMINA CLINIC OFFICIAL',
+        campaignTitle: 'SIÊU SALE THÁNG 11',
+        campaignSub: 'Chăm Da Khoa Học • Ưu Đãi Độc Quyền',
+        hostName: 'HOST: MINH ANH',
+        hostSub: 'Tư vấn & Chốt đơn',
+        followTitle: 'FOLLOW SHOP',
+        followSub: 'Nhận quà đơn 299K',
+
+        v1Top: 'VOUCHER LIVE',
+        v1Val: 'GIẢM 50%',
+        v2Top: 'MUA 1 TẶNG 3',
+        v2Val: 'Quà kèm đơn',
+        v3Top: 'QUÀ ĐƠN 299K',
+        v3Val: 'Tặng SRM Mini',
+
+        trust1: 'Freeship Toàn Quốc',
+        trust2: 'Voucher Độc Quyền',
+        trust3: 'Kiểm Hàng / COD',
+        tickerText: '✦ FREESHIP ĐƠN TỪ 199K   •   ✦ QUÀ TẶNG ĐỘC QUYỀN TRÊN LIVE   •   ✦ BẤM GIỎ HÀNG ĐỂ GIỮ GIÁ ƯU ĐÃI',
+
+        // Ambient FX & Custom Assets
+        ambientType: 'none',
+        ambientDensity: 22,
+        ambientOpacity: 75,
+        customEmojis: '✨ 🌸 🫧 ⭐',
+        brandLogo: '',
+        customFramePng: '',
+        customParticlePng: '',
+
+        backdrop: 'white-studio',
+        activeProductId: 'p1',
+        customPresets: [],
+        products: JSON.parse(JSON.stringify(DEFAULT_PRODUCTS)),
+      };
+    }
+
+    /* -------------------------------------------------------------------------
+       2. RUNTIME VARIABLES & REALTIME BROADCAST SYNC
+       ------------------------------------------------------------------------- */
+    let state = loadState();
+    let syncChannel = null;
+    try {
+      if ('BroadcastChannel' in window) syncChannel = new BroadcastChannel(SYNC_CHANNEL_NAME);
+    } catch (e) { /* Fallback to storage */ }
+
+    let camStream = null;
+    let isCamActive = false;
+    let isMirrored = false;
+
+    let formPhotoData = '';
+    let confirmDeleteId = null;
+    let confirmResetArmed = false;
+
+    // Flash Sale Timer
+    let flashTotal = 180;
+    let flashLeft = 180;
+    let flashRunning = false;
+    let flashActive = false;
+    let flashInterval = null;
+
+    let eventAlertTimer = null;
+    let customParticleImg = null;
+
+    /* -------------------------------------------------------------------------
+       3. STORAGE, COLOR MATH & HELPERS
+       ------------------------------------------------------------------------- */
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return createDefaultState();
+        const parsed = JSON.parse(raw);
+        return {
+          ...createDefaultState(),
+          ...parsed,
+          products: Array.isArray(parsed.products) && parsed.products.length ? parsed.products : JSON.parse(JSON.stringify(DEFAULT_PRODUCTS)),
+          customPresets: Array.isArray(parsed.customPresets) ? parsed.customPresets : [],
+        };
+      } catch (e) {
+        return createDefaultState();
+      }
+    }
+
+    function saveAndSync() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {
+        showToast('Bộ nhớ trình duyệt gần đầy (ảnh tải lên lớn). Hãy xuất file .JSON để sao lưu!', 'amber');
+      }
+      if (!IS_OUTPUT_MODE && syncChannel) {
+        try {
+          syncChannel.postMessage({ type: 'SYNC', state, flash: { flashTotal, flashLeft, flashRunning, flashActive } });
+        } catch (e) { /* Ignore */ }
+      }
+    }
+
+    function sendSyncEvent(payload) {
+      if (!IS_OUTPUT_MODE && syncChannel) {
+        try { syncChannel.postMessage(payload); } catch (e) { /* Ignore */ }
+      }
+    }
+
+    function hexToRgb(hex) {
+      const clean = (hex || '#5B4FE8').replace('#', '');
+      const full = clean.length === 3 ? clean.split('').map(c => c + c).join('') : clean;
+      const num = parseInt(full, 16);
+      return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
+    }
+
+    function lightenHex(hex, amt = 36) {
+      const { r, g, b } = hexToRgb(hex);
+      const clamp = v => Math.max(0, Math.min(255, v));
+      return '#' + [clamp(r + amt), clamp(g + amt), clamp(b + amt)].map(v => v.toString(16).padStart(2, '0')).join('');
+    }
+
+    function getContrastColor(hex) {
+      const { r, g, b } = hexToRgb(hex);
+      const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+      return lum > 0.68 ? '#18181b' : '#ffffff';
+    }
+
+    function formatVND(v) {
+      return (Number(v) || 0).toLocaleString('vi-VN') + 'đ';
+    }
+
+    function formatShortPrice(v) {
+      const n = Number(v) || 0;
+      if (n >= 1000 && n % 1000 === 0) return `${n / 1000}K`;
+      return formatVND(n);
+    }
+
+    function calcDiscount(orig, live) {
+      const o = Number(orig) || 0;
+      const l = Number(live) || 0;
+      return o > l && o > 0 ? Math.round(((o - l) / o) * 100) : 0;
+    }
+
+    function esc(s) {
+      return String(s || '')
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    function showToast(msg, tone = 'zinc') {
+      if (IS_OUTPUT_MODE) return;
+      const root = document.getElementById('toast-root');
+      const tones = {
+        emerald: 'bg-emerald-950/95 border-emerald-500/40 text-emerald-100',
+        amber:   'bg-amber-950/95 border-amber-500/40 text-amber-100',
+        rose:    'bg-rose-950/95 border-rose-500/40 text-rose-100',
+        indigo:  'bg-indigo-950/95 border-indigo-400/40 text-indigo-100',
+        zinc:    'bg-zinc-900/95 border-white/15 text-zinc-100',
+      };
+      const el = document.createElement('div');
+      el.className = `pointer-events-auto px-4 py-2.5 rounded-2xl border shadow-2xl backdrop-blur-md text-xs font-semibold text-center transition-all duration-300 opacity-0 -translate-y-2 ${tones[tone] || tones.zinc}`;
+      el.textContent = msg;
+      root.appendChild(el);
+      requestAnimationFrame(() => el.classList.remove('opacity-0', '-translate-y-2'));
+      setTimeout(() => {
+        el.classList.add('opacity-0', '-translate-y-2');
+        setTimeout(() => el.remove(), 280);
+      }, 2800);
+    }
+
+    /* -------------------------------------------------------------------------
+       4. CRISP COMMERCIAL VECTOR PRODUCT BOTTLES (SVG PLACEHOLDERS)
+       ------------------------------------------------------------------------- */
+    function renderProductVisual(product, transparentMode = false) {
+      if (product.customImage) {
+        return `<img src="${product.customImage}" alt="${esc(product.name)}" class="w-full h-full object-contain drop-shadow-[0_6px_12px_rgba(0,0,0,0.18)]" />`;
+      }
+      const catalog = {
+        'serum-amber': `
+          <svg viewBox="0 0 80 80" class="w-full h-full drop-shadow-[0_6px_10px_rgba(0,0,0,0.18)]" fill="none">
+            <rect x="34" y="8" width="12" height="10" rx="4" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.2"/>
+            <rect x="31" y="18" width="18" height="7" rx="2" fill="#e2e8f0"/>
+            <rect x="24" y="25" width="32" height="45" rx="7" fill="url(#gSerum)"/>
+            <rect x="27" y="34" width="26" height="26" rx="2.5" fill="rgba(255,255,255,0.92)"/>
+            <rect x="31" y="40" width="18" height="2.6" rx="1.3" fill="#451a03"/>
+            <rect x="33" y="46" width="14" height="2" rx="1" fill="#92400e" opacity="0.6"/>
+            <rect x="35" y="51" width="10" height="3.5" rx="1.7" fill="#d97706"/>
+            <defs><linearGradient id="gSerum" x1="24" y1="25" x2="56" y2="70" gradientUnits="userSpaceOnUse"><stop stop-color="#92400e"/><stop offset="1" stop-color="#451a03"/></linearGradient></defs>
+          </svg>`,
+        'sunscreen': `
+          <svg viewBox="0 0 80 80" class="w-full h-full drop-shadow-[0_6px_10px_rgba(0,0,0,0.14)]" fill="none">
+            <rect x="32" y="10" width="16" height="9" rx="2.5" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.2"/>
+            <path d="M22 22 C22 19 25 18 40 18 C55 18 58 19 58 22 L56 66 C56 69 53 71 40 71 C27 71 24 69 24 66 Z" fill="url(#gSun)" stroke="#e2e8f0" stroke-width="1.2"/>
+            <rect x="28" y="31" width="24" height="10" rx="5" fill="#fb923c" opacity="0.22"/>
+            <text x="40" y="39" text-anchor="middle" fill="#ea580c" font-size="8.5" font-weight="800" font-family="sans-serif">SPF50+</text>
+            <rect x="31" y="48" width="18" height="2.4" rx="1.2" fill="#334155"/>
+            <rect x="34" y="54" width="12" height="2" rx="1" fill="#94a3b8"/>
+            <defs><linearGradient id="gSun" x1="22" y1="18" x2="58" y2="71" gradientUnits="userSpaceOnUse"><stop stop-color="#ffffff"/><stop offset="1" stop-color="#f1f5f9"/></linearGradient></defs>
+          </svg>`,
+        'cleanser-duo': `
+          <svg viewBox="0 0 80 80" class="w-full h-full drop-shadow-[0_6px_10px_rgba(0,0,0,0.16)]" fill="none">
+            <rect x="16" y="20" width="22" height="48" rx="6" fill="#ffffff" stroke="#e2e8f0" stroke-width="1.2"/>
+            <rect x="21" y="13" width="12" height="7" rx="2" fill="#cbd5e1"/>
+            <circle cx="27" cy="40" r="6" fill="#6366f1" opacity="0.2"/>
+            <circle cx="27" cy="40" r="3" fill="#6366f1"/>
+            <path d="M44 16 L62 16 L60 62 C60 65 57 68 53 68 C49 68 46 65 46 62 Z" fill="url(#gTube)" stroke="#e2e8f0" stroke-width="1.2"/>
+            <rect x="48" y="64" width="10" height="6" rx="2" fill="#e2e8f0"/>
+            <rect x="48" y="28" width="10" height="3" rx="1.5" fill="#10b981"/>
+            <defs><linearGradient id="gTube" x1="44" y1="16" x2="62" y2="68" gradientUnits="userSpaceOnUse"><stop stop-color="#f8fafc"/><stop offset="1" stop-color="#e0e7ff"/></linearGradient></defs>
+          </svg>`,
+        'mist': `
+          <svg viewBox="0 0 80 80" class="w-full h-full drop-shadow-[0_6px_10px_rgba(0,0,0,0.16)]" fill="none">
+            <rect x="33" y="9" width="14" height="12" rx="4" fill="rgba(255,255,255,0.85)" stroke="#f9a8d4" stroke-width="1.2"/>
+            <rect x="27" y="21" width="26" height="50" rx="8" fill="url(#gMist)" stroke="#fbcfe8" stroke-width="1.2"/>
+            <rect x="31" y="34" width="18" height="24" rx="3" fill="rgba(255,255,255,0.88)"/>
+            <rect x="34" y="41" width="12" height="2.4" rx="1.2" fill="#be185d"/>
+            <rect x="35" y="47" width="10" height="2" rx="1" fill="#f472b6"/>
+            <defs><linearGradient id="gMist" x1="27" y1="21" x2="53" y2="71" gradientUnits="userSpaceOnUse"><stop stop-color="#fbcfe8"/><stop offset="1" stop-color="#f472b6"/></linearGradient></defs>
+          </svg>`,
+      };
+      const svg = catalog[product.svgType] || catalog['serum-amber'];
+      if (transparentMode) return svg;
+      return `<div class="w-full h-full rounded-xl bg-gradient-to-br from-white/75 to-white/30 flex items-center justify-center p-1">${svg}</div>`;
+    }
+
+    /* -------------------------------------------------------------------------
+       5. APPLY GLASSMORPHISM CSS TOKENS
+       ------------------------------------------------------------------------- */
+    function applyVisualTokens() {
+      const root = document.documentElement;
+      const stage = document.getElementById('live-stage');
+      const rgb = hexToRgb(state.accentColor);
+      const sec = state.accentColor2 || lightenHex(state.accentColor, 34);
+
+      root.style.setProperty('--accent', state.accentColor);
+      root.style.setProperty('--accent-2', sec);
+      root.style.setProperty('--accent-soft', `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.16)`);
+      root.style.setProperty('--accent-glow', `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.36)`);
+      root.style.setProperty('--accent-contrast', getContrastColor(state.accentColor));
+
+      root.style.setProperty('--glass-blur', `${state.glassBlur}px`);
+      root.style.setProperty('--glass-opacity', (state.glassOpacity / 100).toFixed(2));
+
+      stage.classList.toggle('stage-glass-light', state.glassFinish === 'light');
+      stage.classList.toggle('stage-glass-dark', state.glassFinish === 'dark');
+    }
+
+    /* -------------------------------------------------------------------------
+       6. RENDER 5 COMMERCIAL GLASSMORPHISM ZONES ON 9:16 STAGE
+       ------------------------------------------------------------------------- */
+    function renderZoneHeader() {
+      const slot = document.getElementById('zone-header');
+      if (!state.showHeader || state.headerStyle === 'hidden') {
+        slot.innerHTML = '';
+        return;
+      }
+
+      const logoEl = state.brandLogo
+        ? `<img src="${state.brandLogo}" alt="Logo" class="w-4 h-4 rounded-full object-cover shrink-0 border border-white/50" />`
+        : `<span class="w-2 h-2 rounded-full shrink-0" style="background: var(--accent);"></span>`;
+
+      if (state.headerStyle === 'editorial') {
+        slot.innerHTML = `
+          <div class="flex flex-col items-center text-center">
+            <div class="glass-surface inline-flex items-center gap-1.5 px-3 py-1 rounded-full max-w-[88%]">
+              ${logoEl}
+              <span class="font-display text-[9.5px] font-bold tracking-[0.12em] uppercase truncate">${esc(state.shopName)}</span>
+            </div>
+            <h2 class="font-display font-black text-[22px] sm:text-[24px] leading-[1.08] tracking-tight mt-1.5 editorial-headline-light uppercase px-1">
+              ${esc(state.campaignTitle)}
+            </h2>
+            ${state.campaignSub ? `
+              <div class="glass-accent-pill mt-1.5 px-3.5 py-0.5 rounded-full text-[9.5px] font-bold tracking-wide max-w-[92%] truncate">
+                ${esc(state.campaignSub)}
+              </div>` : ''}
+          </div>
+        `;
+        return;
+      }
+
+      if (state.headerStyle === 'mega-sale') {
+        slot.innerHTML = `
+          <div class="flex flex-col items-center text-center">
+            <div class="glass-surface inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full mb-1">
+              ${logoEl}
+              <span class="text-[9px] font-bold tracking-wider uppercase truncate">${esc(state.shopName)}</span>
+            </div>
+            <div class="font-display font-black text-[26px] leading-[1.02] tracking-tight uppercase mega-headline-text px-1">
+              ${esc(state.campaignTitle)}
+            </div>
+            ${state.campaignSub ? `
+              <div class="mt-1.5 -rotate-[1.2deg] glass-accent-pill px-4 py-1 rounded-full text-[9.5px] font-extrabold tracking-wide shadow-lg max-w-[92%] truncate">
+                ${esc(state.campaignSub)}
+              </div>` : ''}
+          </div>
+        `;
+        return;
+      }
+
+      // minimal-pill
+      slot.innerHTML = `
+        <div class="flex justify-center">
+          <div class="glass-surface inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full max-w-[92%]">
+            ${logoEl}
+            <span class="font-display text-[10.5px] font-extrabold tracking-wide uppercase truncate">${esc(state.campaignTitle)}</span>
+            ${state.campaignSub ? `<span class="text-[9.5px] opacity-75 truncate hidden sm:inline">• ${esc(state.campaignSub)}</span>` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderZoneLeftBadges() {
+      const slot = document.getElementById('zone-left-badges');
+      if (!state.showLeftBadges) {
+        slot.innerHTML = '';
+        return;
+      }
+      slot.innerHTML = `
+        <!-- Host Info Micro-Card -->
+        <div class="glass-surface rounded-2xl px-2.5 py-1.5">
+          <div class="flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0 shadow-[0_0_6px_rgba(16,185,129,0.8)]"></span>
+            <span class="font-display text-[9px] font-extrabold uppercase tracking-wide truncate accent-text-adaptive">${esc(state.hostName)}</span>
+          </div>
+          <div class="text-[8.5px] font-medium mt-0.5 truncate" style="color: var(--g-muted);">${esc(state.hostSub)}</div>
+        </div>
+
+        <!-- Follow / Giveaway Pill -->
+        <div class="glass-surface rounded-2xl px-2.5 py-1.5 flex items-center gap-1.5">
+          <div class="w-5 h-5 rounded-full glass-accent-pill flex items-center justify-center shrink-0">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+            </svg>
+          </div>
+          <div class="min-w-0">
+            <div class="font-display text-[8.5px] font-extrabold uppercase tracking-wide leading-tight truncate">${esc(state.followTitle)}</div>
+            <div class="text-[8px] font-semibold leading-tight truncate" style="color: var(--g-muted);">${esc(state.followSub)}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderZoneRightVouchers() {
+      const slot = document.getElementById('zone-right-vouchers');
+      if (!state.showRightVouchers) {
+        slot.innerHTML = '';
+        return;
+      }
+
+      const pct = flashTotal > 0 ? Math.max(0, (flashLeft / flashTotal) * 100) : 0;
+      const isUrgent = flashActive && flashRunning && flashLeft <= 30 && flashLeft > 0;
+
+      const card3HTML = flashActive
+        ? `
+          <div class="glass-surface-strong rounded-2xl px-2 py-2 text-center border-2 ${isUrgent ? 'flash-soft-pulse' : ''}" style="border-color: var(--accent);">
+            <div class="flex items-center justify-center gap-1">
+              <span class="text-[9px]">⚡</span>
+              <span class="font-display text-[8px] font-extrabold uppercase tracking-wider accent-text-adaptive">FLASH SALE</span>
+            </div>
+            <div id="stage-flash-clock" class="font-mono font-extrabold text-[15px] leading-tight mt-0.5 tracking-wider">${formatMMSS(flashLeft)}</div>
+            <div class="mt-1 h-1 w-full rounded-full overflow-hidden" style="background: var(--g-chip-bg);">
+              <div id="stage-flash-bar" class="h-full rounded-full transition-all duration-500 ease-linear" style="width:${pct}%; background: linear-gradient(90deg, var(--accent), var(--accent-2));"></div>
+            </div>
+          </div>
+        `
+        : `
+          <div class="glass-surface rounded-2xl px-2 py-1.5 text-center">
+            <div class="font-display text-[8.5px] font-extrabold uppercase tracking-wide leading-tight accent-text-adaptive truncate">${esc(state.v3Top)}</div>
+            <div class="text-[8px] font-semibold mt-0.5 truncate" style="color: var(--g-muted);">${esc(state.v3Val)}</div>
+          </div>
+        `;
+
+      slot.innerHTML = `
+        <!-- Card 1: Voucher Ticket Style -->
+        <div class="glass-surface voucher-ticket rounded-2xl px-2 py-1.5 text-center overflow-hidden">
+          <div class="text-[7.5px] font-extrabold uppercase tracking-widest pb-1 border-b border-dashed truncate" style="border-color: var(--g-divider); color: var(--g-muted);">
+            ${esc(state.v1Top)}
+          </div>
+          <div class="font-display font-black text-[13.5px] leading-tight pt-1 accent-text-adaptive tracking-tight truncate">
+            ${esc(state.v1Val)}
+          </div>
+        </div>
+
+        <!-- Card 2: Gift / Combo Badge -->
+        <div class="glass-surface rounded-2xl px-2 py-1.5 text-center">
+          <div class="glass-accent-pill inline-block px-2 py-0.5 rounded-full font-display text-[8px] font-extrabold uppercase tracking-wide max-w-full truncate">
+            ${esc(state.v2Top)}
+          </div>
+          <div class="text-[8px] font-semibold mt-1 truncate" style="color: var(--g-muted);">${esc(state.v2Val)}</div>
+        </div>
+
+        <!-- Card 3: Extra Perk or Dynamic Flash Sale Countdown -->
+        ${card3HTML}
+      `;
+    }
+
+    function renderZoneProductShowcase() {
+      const slot = document.getElementById('zone-product-showcase');
+      slot.style.bottom = `${state.cardBottomPct}%`;
+
+      const activeProduct = state.products.find(p => p.id === state.activeProductId);
+
+      // Layout B: Kệ 3 Deal Ngang (3-Deal Shelf)
+      if (state.cardLayout === 'shelf-3') {
+        if (!state.activeProductId) {
+          slot.innerHTML = '';
+          return;
+        }
+        // Luôn lấy 3 sản phẩm gọn gàng, đảm bảo sản phẩm đang chọn nằm trong kệ
+        let shelfItems = state.products.slice(0, 3);
+        if (activeProduct && !shelfItems.some(x => x.id === activeProduct.id)) {
+          shelfItems = [state.products[0], activeProduct, state.products[2]].filter(Boolean);
+        }
+
+        slot.innerHTML = `
+          <div id="active-showcase-wrap" class="spring-in grid grid-cols-3 gap-1.5 items-end pointer-events-auto">
+            ${shelfItems.map(item => {
+              const isSelected = item.id === state.activeProductId;
+              return `
+                <button onclick="selectProduct('${item.id}')" class="relative text-center rounded-2xl p-1.5 pt-2 transition-all duration-300 cursor-pointer ${
+                  isSelected
+                    ? 'glass-surface-strong -translate-y-1.5 ring-2'
+                    : 'glass-surface opacity-90 hover:opacity-100'
+                }" style="${isSelected ? 'border-color: var(--accent); --tw-ring-color: var(--accent-glow);' : ''}">
+                  ${isSelected ? `<span class="absolute -top-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap px-2 py-0.5 rounded-full glass-accent-pill font-display text-[7px] font-extrabold uppercase tracking-wider">ĐANG LÊN SÓNG</span>` : ''}
+                  <div class="w-11 h-11 mx-auto -mt-1 mb-1 flex items-center justify-center">
+                    ${renderProductVisual(item, true)}
+                  </div>
+                  <div class="rounded-lg px-1 py-0.5 text-[7.5px] font-extrabold truncate ${isSelected ? 'glass-accent-pill' : ''}" style="${!isSelected ? 'background: var(--g-chip-bg); color: var(--g-chip-text);' : ''}">
+                    ${esc(item.code)}
+                  </div>
+                  <div class="text-[8.5px] font-bold leading-tight line-clamp-1 mt-1 px-0.5">${esc(item.name)}</div>
+                  <div class="mt-1 pt-1 border-t" style="border-color: var(--g-divider);">
+                    ${Number(item.originalPrice) > Number(item.livePrice) ? `<div class="text-[7.5px] line-through leading-none" style="color: var(--g-muted);">${formatVND(item.originalPrice)}</div>` : ''}
+                    <div class="font-display font-black text-[11px] leading-tight mt-0.5 accent-text-adaptive">${formatVND(item.livePrice)}</div>
+                  </div>
+                </button>
+              `;
+            }).join('')}
+          </div>
+        `;
+        return;
+      }
+
+      // Nếu không có sản phẩm đang bật thì ẩn mượt
+      if (!activeProduct) {
+        const old = document.getElementById('active-showcase-wrap');
+        if (old) {
+          old.classList.remove('spring-in');
+          old.classList.add('fade-out-down');
+          setTimeout(() => { if (!state.activeProductId) slot.innerHTML = ''; }, 210);
+        } else {
+          slot.innerHTML = '';
+        }
+        return;
+      }
+
+      const discount = calcDiscount(activeProduct.originalPrice, activeProduct.livePrice);
+
+      // Layout C: Thanh Deal Viên Thuốc (Slim Pill Bar)
+      if (state.cardLayout === 'slim-pill') {
+        const perk = (activeProduct.tags && activeProduct.tags[0]) ? activeProduct.tags[0] : activeProduct.code;
+        slot.innerHTML = `
+          <div id="active-showcase-wrap" class="spring-in relative overflow-hidden glass-surface-strong rounded-full p-1.5 pl-2 flex items-center gap-2">
+            <div class="w-10 h-10 rounded-full bg-white/70 border border-white/80 flex items-center justify-center p-1 shrink-0 overflow-hidden shadow-sm">
+              ${renderProductVisual(activeProduct, true)}
+            </div>
+            <div class="flex-1 min-w-0 pr-1">
+              <div class="flex items-center gap-1">
+                <span class="px-1.5 py-0.5 rounded-full text-[7.5px] font-extrabold uppercase shrink-0" style="background: var(--g-chip-bg); color: var(--g-chip-text);">${esc(activeProduct.code)}</span>
+                <span class="text-[8.5px] font-semibold truncate" style="color: var(--g-muted);">${esc(perk)}</span>
+              </div>
+              <div class="font-display text-[10.5px] font-bold leading-tight truncate mt-0.5">${esc(activeProduct.name)}</div>
+            </div>
+            <div class="glass-accent-pill rounded-full px-3.5 py-2 text-center shrink-0">
+              ${Number(activeProduct.originalPrice) > Number(activeProduct.livePrice) ? `<div class="text-[7.5px] line-through opacity-80 leading-none">${formatShortPrice(activeProduct.originalPrice)}</div>` : ''}
+              <div class="font-display font-black text-[14px] leading-none mt-0.5">${formatShortPrice(activeProduct.livePrice)}</div>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // Layout A (Default): Thẻ Kính Tiêu Điểm (Spotlight Frosted Card)
+      const tagsHTML = (activeProduct.tags || []).slice(0, 2).map(t =>
+        `<span class="px-1.5 py-0.5 rounded-md text-[8.5px] font-semibold truncate max-w-[112px]" style="background: var(--g-chip-bg); color: var(--g-chip-text);">${esc(t)}</span>`
+      ).join('');
+
+      slot.innerHTML = `
+        <div id="active-showcase-wrap" class="spring-in relative overflow-hidden glass-surface-strong rounded-[22px] p-2.5 flex items-center gap-3">
+          <!-- Ảnh sản phẩm sạch sẽ -->
+          <div class="relative w-[70px] h-[70px] rounded-2xl shrink-0 overflow-hidden border border-white/60 shadow-sm">
+            ${renderProductVisual(activeProduct, false)}
+            <span class="absolute top-1 left-1 px-1.5 py-0.5 rounded-md glass-accent-pill font-display text-[7.5px] font-extrabold tracking-wide leading-none">
+              ${esc(activeProduct.code)}
+            </span>
+          </div>
+
+          <!-- Nội dung sản phẩm & Giá -->
+          <div class="flex-1 min-w-0">
+            <div class="font-display text-[11.5px] font-bold leading-snug line-clamp-2">${esc(activeProduct.name)}</div>
+            ${tagsHTML ? `<div class="flex flex-wrap gap-1 mt-1">${tagsHTML}</div>` : ''}
+            <div class="flex items-end justify-between gap-2 mt-1.5 pt-1.5 border-t" style="border-color: var(--g-divider);">
+              <div class="min-w-0">
+                ${Number(activeProduct.originalPrice) > Number(activeProduct.livePrice)
+                  ? `<div class="text-[9px] line-through leading-none" style="color: var(--g-muted);">${formatVND(activeProduct.originalPrice)}</div>` : ''}
+                <div class="font-display font-black text-[17px] leading-none mt-0.5 accent-text-adaptive tracking-tight">
+                  ${formatVND(activeProduct.livePrice)}
+                </div>
+              </div>
+              ${discount > 0 ? `<span class="glass-accent-pill px-2 py-0.5 rounded-full font-display text-[9.5px] font-extrabold shrink-0">-${discount}%</span>` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderZoneBottomBar() {
+      const slot = document.getElementById('zone-bottom-bar');
+      if (!state.showBottomBar || state.bottomBarMode === 'hidden') {
+        slot.innerHTML = '';
+        return;
+      }
+
+      if (state.bottomBarMode === 'ticker') {
+        const txt = (state.tickerText || '').trim() || '✦ CHÀO MỪNG ĐẾN VỚI PHIÊN LIVESTREAM HÔM NAY';
+        slot.innerHTML = `
+          <div class="glass-surface rounded-full overflow-hidden py-1.5">
+            <div class="marquee-track flex items-center whitespace-nowrap">
+              <span class="text-[9.5px] font-bold px-5 tracking-wide">${esc(txt)}</span>
+              <span class="text-[9.5px] font-bold px-5 tracking-wide">${esc(txt)}</span>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      // 3-Column Trust Bar với SVG icon sắc nét
+      slot.innerHTML = `
+        <div class="glass-surface rounded-2xl px-2 py-1.5 grid grid-cols-3 items-center text-center divide-x" style="--tw-divide-opacity: 1; border-color: var(--g-border);">
+          <div class="flex flex-col items-center justify-center px-1" style="border-color: var(--g-divider);">
+            <svg class="w-3.5 h-3.5 mb-0.5 accent-text-adaptive" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M3 13V6a1 1 0 011-1h11v11H4a1 1 0 01-1-1zm12 3h5l1-4-2-3h-4v7zM7 18a2 2 0 100-4 2 2 0 000 4zm10 0a2 2 0 100-4 2 2 0 000 4z"/>
+            </svg>
+            <span class="text-[8px] font-bold leading-tight truncate w-full">${esc(state.trust1)}</span>
+          </div>
+          <div class="flex flex-col items-center justify-center px-1" style="border-color: var(--g-divider);">
+            <svg class="w-3.5 h-3.5 mb-0.5 accent-text-adaptive" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 5v2m0 4v2m0 4v2M5 5a2 2 0 00-2 2v3a2 2 0 110 4v3a2 2 0 002 2h14a2 2 0 002-2v-3a2 2 0 110-4V7a2 2 0 00-2-2H5z"/>
+            </svg>
+            <span class="text-[8px] font-bold leading-tight truncate w-full">${esc(state.trust2)}</span>
+          </div>
+          <div class="flex flex-col items-center justify-center px-1" style="border-color: var(--g-divider);">
+            <svg class="w-3.5 h-3.5 mb-0.5 accent-text-adaptive" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+            </svg>
+            <span class="text-[8px] font-bold leading-tight truncate w-full">${esc(state.trust3)}</span>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderCustomFrameOverlay() {
+      const img = document.getElementById('custom-frame-img');
+      if (state.customFramePng) {
+        img.src = state.customFramePng;
+        img.classList.remove('hidden');
+      } else {
+        img.classList.add('hidden');
+      }
+    }
+
+    function triggerPriceHighlight(fromSync = false) {
+      const card = document.getElementById('active-showcase-wrap');
+      if (!card) {
+        if (!fromSync) showToast('Bật 1 sản phẩm trước để dùng hiệu ứng Nhấn Giá!', 'amber');
+        return;
+      }
+      card.classList.remove('price-shimmer-pulse', 'shimmer-sweep');
+      void card.offsetWidth;
+      card.classList.add('price-shimmer-pulse', 'shimmer-sweep');
+      if (!fromSync) sendSyncEvent({ type: 'PRICE_SHIMMER' });
+    }
+
+    /* -------------------------------------------------------------------------
+       7. TASTEFUL 60FPS CANVAS ENGINE (SUBTLE AMBIENT + ELEGANT BURSTS)
+       ------------------------------------------------------------------------- */
+    const fxCanvas = document.getElementById('fx-canvas');
+    const fxCtx = fxCanvas.getContext('2d');
+    let cw = 360, ch = 640;
+    let ambientPool = [];
+    let burstPool = [];
+    let prevTime = performance.now();
+
+    function resizeFxCanvas() {
+      const rect = fxCanvas.getBoundingClientRect();
+      if (!rect.width || !rect.height) return;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      cw = rect.width;
+      ch = rect.height;
+      fxCanvas.width = Math.round(cw * dpr);
+      fxCanvas.height = Math.round(ch * dpr);
+      fxCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function makeAmbientParticle(randomY = false) {
+      const t = state.ambientType;
+      const emojis = (state.customEmojis || '✨ 🌸').trim().split(/\s+/).filter(Boolean);
+      const rising = t === 'bokeh' || t === 'sparkle';
+
+      return {
+        x: Math.random() * cw,
+        y: randomY ? Math.random() * ch : (rising ? ch + 18 : -18),
+        vx: (Math.random() - 0.5) * 0.35,
+        vy: t === 'snow' ? 0.35 + Math.random() * 0.65
+          : t === 'petals' ? 0.55 + Math.random() * 0.85
+          : t === 'bokeh' ? -(0.15 + Math.random() * 0.32)
+          : t === 'sparkle' ? -(0.12 + Math.random() * 0.25)
+          : 0.45 + Math.random() * 0.75,
+        size: t === 'snow' ? 2.2 + Math.random() * 4.2
+            : t === 'bokeh' ? 8 + Math.random() * 16
+            : t === 'sparkle' ? 3 + Math.random() * 5
+            : t === 'petals' ? 6 + Math.random() * 6
+            : 12 + Math.random() * 8,
+        angle: Math.random() * Math.PI * 2,
+        spin: (Math.random() - 0.5) * 0.035,
+        phase: Math.random() * Math.PI * 2,
+        phaseSpeed: 0.014 + Math.random() * 0.02,
+        sway: 0.25 + Math.random() * 0.55,
+        alpha: t === 'bokeh' ? 0.14 + Math.random() * 0.24 : 0.45 + Math.random() * 0.45,
+        color: Math.random() > 0.45 ? '#fda4af' : '#fde68a',
+        emoji: emojis[Math.floor(Math.random() * emojis.length)] || '✨',
+      };
+    }
+
+    function rebuildAmbientPool(reset = false) {
+      if (state.ambientType === 'none') {
+        ambientPool = [];
+        return;
+      }
+      const target = Math.max(4, Math.min(60, Number(state.ambientDensity) || 22));
+      if (reset) {
+        ambientPool = [];
+        for (let i = 0; i < target; i++) ambientPool.push(makeAmbientParticle(true));
+      } else {
+        while (ambientPool.length < target) ambientPool.push(makeAmbientParticle(true));
+        if (ambientPool.length > target) ambientPool.length = target;
+      }
+    }
+
+    function drawAmbient(p) {
+      const t = state.ambientType;
+      const globalOp = (Number(state.ambientOpacity) || 75) / 100;
+      fxCtx.save();
+      fxCtx.globalAlpha = Math.max(0, Math.min(1, p.alpha * globalOp));
+      fxCtx.translate(p.x, p.y);
+      fxCtx.rotate(p.angle);
+
+      if (t === 'snow') {
+        const g = fxCtx.createRadialGradient(0, 0, 0, 0, 0, p.size);
+        g.addColorStop(0, 'rgba(255,255,255,0.96)');
+        g.addColorStop(0.6, 'rgba(224,242,254,0.6)');
+        g.addColorStop(1, 'rgba(255,255,255,0)');
+        fxCtx.fillStyle = g;
+        fxCtx.beginPath();
+        fxCtx.arc(0, 0, p.size, 0, Math.PI * 2);
+        fxCtx.fill();
+      } else if (t === 'petals') {
+        // Cánh hoa đào / mai mềm mại
+        fxCtx.fillStyle = p.color;
+        fxCtx.beginPath();
+        fxCtx.ellipse(0, 0, p.size * 0.48, p.size * 0.85, 0.3, 0, Math.PI * 2);
+        fxCtx.fill();
+      } else if (t === 'bokeh') {
+        const g = fxCtx.createRadialGradient(0, 0, 0, 0, 0, p.size);
+        g.addColorStop(0, state.accentColor2 || '#ffffff');
+        g.addColorStop(0.55, state.accentColor);
+        g.addColorStop(1, 'rgba(255,255,255,0)');
+        fxCtx.fillStyle = g;
+        fxCtx.beginPath();
+        fxCtx.arc(0, 0, p.size, 0, Math.PI * 2);
+        fxCtx.fill();
+      } else if (t === 'sparkle') {
+        // Ngôi sao 4 cánh tinh tế lấp lánh nhẹ
+        const pulse = 0.5 + 0.5 * Math.sin(p.phase * 2.5);
+        fxCtx.globalAlpha *= pulse;
+        fxCtx.fillStyle = state.glassFinish === 'dark' ? '#ffffff' : state.accentColor;
+        const s = p.size;
+        fxCtx.beginPath();
+        fxCtx.moveTo(0, -s); fxCtx.quadraticCurveTo(0, 0, s, 0);
+        fxCtx.quadraticCurveTo(0, 0, 0, s); fxCtx.quadraticCurveTo(0, 0, -s, 0);
+        fxCtx.quadraticCurveTo(0, 0, 0, -s);
+        fxCtx.fill();
+      } else if (t === 'custom') {
+        if (customParticleImg && customParticleImg.complete) {
+          const s = p.size * 1.3;
+          fxCtx.drawImage(customParticleImg, -s / 2, -s / 2, s, s);
+        } else {
+          fxCtx.font = `${Math.round(p.size)}px sans-serif`;
+          fxCtx.textAlign = 'center';
+          fxCtx.textBaseline = 'middle';
+          fxCtx.fillText(p.emoji, 0, 0);
+        }
+      }
+      fxCtx.restore();
+    }
+
+    function spawnEventBurst(type) {
+      const accentPalette = [state.accentColor, state.accentColor2, '#ffffff', '#fde047'];
+
+      if (type === 'hearts') {
+        const glyphs = ['💗', '💖', '❤️', '💕'];
+        for (let i = 0; i < 24; i++) {
+          burstPool.push({
+            kind: 'emoji',
+            glyph: glyphs[i % glyphs.length],
+            x: cw - 20 - Math.random() * 44,
+            y: ch * 0.84 + Math.random() * 40,
+            vx: (Math.random() - 0.5) * 1.1,
+            vy: -(1.9 + Math.random() * 2.2),
+            gravity: -0.01,
+            drag: 0.99,
+            size: 14 + Math.random() * 10,
+            life: 1,
+            decay: 0.01 + Math.random() * 0.005,
+            angle: (Math.random() - 0.5) * 0.3,
+            spin: (Math.random() - 0.5) * 0.02,
+          });
+        }
+      } else if (type === 'lixi') {
+        const glyphs = ['🧧', '✨', '🪙'];
+        for (let i = 0; i < 26; i++) {
+          burstPool.push({
+            kind: 'emoji',
+            glyph: glyphs[i % glyphs.length],
+            x: Math.random() * cw,
+            y: -14 - Math.random() * 90,
+            vx: (Math.random() - 0.5) * 1.1,
+            vy: 2.0 + Math.random() * 2.4,
+            gravity: 0.03,
+            drag: 0.994,
+            size: 16 + Math.random() * 8,
+            life: 1,
+            decay: 0.009 + Math.random() * 0.004,
+            angle: Math.random() * 6,
+            spin: (Math.random() - 0.5) * 0.06,
+          });
+        }
+      } else if (type === 'fireworks') {
+        const pts = [{ x: cw * 0.25, y: ch * 0.26 }, { x: cw * 0.75, y: ch * 0.3 }];
+        pts.forEach(c => {
+          for (let i = 0; i < 24; i++) {
+            const a = (Math.PI * 2 * i) / 24;
+            const sp = 1.4 + Math.random() * 3.0;
+            burstPool.push({
+              kind: 'dot',
+              x: c.x, y: c.y,
+              vx: Math.cos(a) * sp,
+              vy: Math.sin(a) * sp,
+              gravity: 0.045,
+              drag: 0.968,
+              size: 2.2 + Math.random() * 2.8,
+              color: accentPalette[i % accentPalette.length],
+              life: 1,
+              decay: 0.015 + Math.random() * 0.008,
+              angle: 0, spin: 0,
+            });
+          }
+        });
+      } else {
+        // Nổ đơn / Quà VIP / Flash Sale: tia sáng sang trọng bay nhẹ từ giữa trên
+        const glyphMap = { order: ['✨', '🛍️'], gift: ['🎁', '✨', '💎'], flash: ['⚡', '✨'] };
+        const glyphs = glyphMap[type] || ['✨'];
+        for (let i = 0; i < 26; i++) {
+          const ang = -Math.PI / 2 + (Math.random() - 0.5) * 2.2;
+          const sp = 2.0 + Math.random() * 3.6;
+          burstPool.push({
+            kind: i % 4 === 0 ? 'emoji' : 'dot',
+            glyph: glyphs[i % glyphs.length],
+            x: cw * 0.5 + (Math.random() - 0.5) * 60,
+            y: ch * 0.24,
+            vx: Math.cos(ang) * sp,
+            vy: Math.sin(ang) * sp - 0.5,
+            gravity: 0.075,
+            drag: 0.978,
+            size: i % 4 === 0 ? 15 + Math.random() * 6 : 2.2 + Math.random() * 3.2,
+            color: accentPalette[i % accentPalette.length],
+            life: 1,
+            decay: 0.014 + Math.random() * 0.008,
+            angle: 0, spin: (Math.random() - 0.5) * 0.06,
+          });
+        }
+      }
+    }
+
+    function renderFxLoop(now) {
+      const dt = Math.min((now - prevTime) / 16.67, 2.0);
+      prevTime = now;
+      fxCtx.clearRect(0, 0, cw, ch);
+
+      const rising = state.ambientType === 'bokeh' || state.ambientType === 'sparkle';
+      for (let i = 0; i < ambientPool.length; i++) {
+        const p = ambientPool[i];
+        p.phase += p.phaseSpeed * dt;
+        p.x += (p.vx + Math.sin(p.phase) * p.sway) * dt;
+        p.y += p.vy * dt;
+        p.angle += p.spin * dt;
+        if (!rising && p.y > ch + 24) ambientPool[i] = makeAmbientParticle(false);
+        else if (rising && p.y < -24) ambientPool[i] = makeAmbientParticle(false);
+        if (p.x < -24) p.x = cw + 20;
+        if (p.x > cw + 24) p.x = -20;
+        drawAmbient(p);
+      }
+
+      for (let i = burstPool.length - 1; i >= 0; i--) {
+        const b = burstPool[i];
+        b.vx *= Math.pow(b.drag, dt);
+        b.vy = b.vy * Math.pow(b.drag, dt) + b.gravity * dt;
+        b.x += b.vx * dt;
+        b.y += b.vy * dt;
+        b.angle += b.spin * dt;
+        b.life -= b.decay * dt;
+        if (b.life <= 0) { burstPool.splice(i, 1); continue; }
+
+        fxCtx.save();
+        fxCtx.globalAlpha = Math.max(0, Math.min(1, b.life));
+        fxCtx.translate(b.x, b.y);
+        fxCtx.rotate(b.angle);
+        if (b.kind === 'emoji') {
+          fxCtx.font = `${Math.round(b.size)}px sans-serif`;
+          fxCtx.textAlign = 'center';
+          fxCtx.textBaseline = 'middle';
+          fxCtx.fillText(b.glyph, 0, 0);
+        } else {
+          fxCtx.shadowBlur = 8;
+          fxCtx.shadowColor = b.color;
+          fxCtx.fillStyle = b.color;
+          fxCtx.beginPath();
+          fxCtx.arc(0, 0, b.size, 0, Math.PI * 2);
+          fxCtx.fill();
+        }
+        fxCtx.restore();
+      }
+      requestAnimationFrame(renderFxLoop);
+    }
+
+    function triggerLiveEvent(type, forcedSender = null, fromSync = false) {
+      const inp = document.getElementById('event-buyer-input');
+      const sender = forcedSender || (inp && inp.value.trim()) || SAMPLE_BUYERS[Math.floor(Math.random() * SAMPLE_BUYERS.length)];
+
+      if (type === 'flash' && !flashActive && !fromSync) {
+        toggleFlashSale();
+      }
+
+      const defs = {
+        order:     { icon: '🔥', title: `${sender} vừa chốt đơn thành công!`, sub: 'Cảm ơn đã ủng hộ phiên Live hôm nay' },
+        gift:      { icon: '🎁', title: `${sender} vừa tặng Quà VIP!`, sub: 'Cảm ơn tình cảm siêu dễ thương ❤️' },
+        hearts:    { icon: '💗', title: 'Đạt Mốc Tim Mới Trên Live!', sub: 'Tiếp tục thả tim mở khóa thêm ưu đãi' },
+        flash:     { icon: '⚡', title: 'Mở Khóa Flash Sale Giới Hạn!', sub: 'Chốt ngay trước khi đồng hồ về 00:00' },
+        lixi:      { icon: '🧧', title: 'Tung Lì Xì & Voucher Độc Quyền!', sub: 'Bấm giỏ hàng để áp mã giảm giá ngay' },
+        fireworks: { icon: '✨', title: `Chúc Mừng Mốc Mới Cùng ${sender}!`, sub: 'Cảm ơn cả nhà đã đồng hành cùng Shop' },
+      };
+      const meta = defs[type] || defs.order;
+      spawnEventBurst(type);
+
+      const slot = document.getElementById('zone-event-alert');
+      clearTimeout(eventAlertTimer);
+      slot.innerHTML = `
+        <div id="live-event-toast" class="event-pill-in glass-surface-strong shimmer-sweep relative overflow-hidden rounded-full pl-2 pr-3.5 py-1.5 flex items-center gap-2 max-w-[92%]">
+          <span class="w-6 h-6 rounded-full glass-accent-pill flex items-center justify-center text-xs shrink-0">${meta.icon}</span>
+          <div class="min-w-0">
+            <div class="font-display text-[10px] font-extrabold leading-tight truncate">${esc(meta.title)}</div>
+            <div class="text-[8.5px] font-medium truncate" style="color: var(--g-muted);">${esc(meta.sub)}</div>
+          </div>
+        </div>
+      `;
+
+      eventAlertTimer = setTimeout(() => {
+        const el = document.getElementById('live-event-toast');
+        if (el) {
+          el.classList.remove('event-pill-in');
+          el.classList.add('event-pill-out');
+          setTimeout(() => { slot.innerHTML = ''; }, 280);
+        }
+      }, 3400);
+
+      if (!fromSync) sendSyncEvent({ type: 'EVENT', eventType: type, sender });
+    }
+
+    /* -------------------------------------------------------------------------
+       8. FLASH SALE COUNTDOWN
+       ------------------------------------------------------------------------- */
+    function formatMMSS(sec) {
+      return `${String(Math.floor(sec / 60)).padStart(2, '0')}:${String(sec % 60).padStart(2, '0')}`;
+    }
+
+    function updateFlashControls() {
+      const str = formatMMSS(flashLeft);
+      const panelTime = document.getElementById('panel-flash-time');
+      if (panelTime) panelTime.textContent = str;
+      const btn = document.getElementById('btn-flash-main');
+      if (btn) {
+        if (flashRunning) {
+          btn.textContent = '⏸ Tạm dừng Flash Sale';
+          btn.className = 'col-span-2 py-2 rounded-xl text-xs font-bold bg-amber-400 hover:bg-amber-300 text-zinc-950 shadow transition cursor-pointer';
+        } else if (flashActive && flashLeft > 0) {
+          btn.textContent = '▶ Tiếp tục đếm ngược';
+          btn.className = 'col-span-2 py-2 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-500 text-white shadow transition cursor-pointer';
+        } else {
+          btn.textContent = '⚡ Bật Flash Sale';
+          btn.className = 'col-span-2 py-2 rounded-xl text-xs font-bold bg-rose-600 hover:bg-rose-500 text-white shadow transition cursor-pointer';
+        }
+      }
+      renderZoneRightVouchers();
+    }
+
+    function setFlashDuration(sec) {
+      flashTotal = sec;
+      flashLeft = sec;
+      updateFlashControls();
+      saveAndSync();
+    }
+
+    function toggleFlashSale() {
+      if (flashRunning) {
+        clearInterval(flashInterval);
+        flashRunning = false;
+        updateFlashControls();
+        saveAndSync();
+      } else {
+        if (flashLeft <= 0) flashLeft = flashTotal;
+        flashActive = true;
+        flashRunning = true;
+        if (!state.showRightVouchers) state.showRightVouchers = true;
+        clearInterval(flashInterval);
+        flashInterval = setInterval(() => {
+          if (flashLeft > 0) {
+            flashLeft--;
+            updateFlashControls();
+            sendSyncEvent({ type: 'FLASH_TICK', flashTotal, flashLeft, flashRunning, flashActive });
+          } else {
+            clearInterval(flashInterval);
+            flashRunning = false;
+            updateFlashControls();
+            triggerLiveEvent('fireworks', 'Hết Giờ Flash Sale');
+          }
+        }, 1000);
+        updateFlashControls();
+        renderQuickToggles();
+        saveAndSync();
+      }
+    }
+
+    function resetFlashSale() {
+      clearInterval(flashInterval);
+      flashRunning = false;
+      flashActive = false;
+      flashLeft = flashTotal;
+      updateFlashControls();
+      saveAndSync();
+    }
+
+    /* -------------------------------------------------------------------------
+       9. PRESETS, SMART MIX & GLASS CONTROLS
+       ------------------------------------------------------------------------- */
+    function applyPreset(id) {
+      const all = [...BUILTIN_PRESETS, ...state.customPresets];
+      const found = all.find(p => p.id === id);
+      if (!found) return;
+      state = { ...state, ...found.config, activePresetId: id };
+      hydrateAll();
+      saveAndSync();
+      showToast(`Đã chọn giao diện: ${found.name}`, 'emerald');
+    }
+
+    function smartMixRefined() {
+      // Chỉ ghép các tổ hợp đã được thiết kế hài hòa (Kính Sáng/Tối + Màu tinh tế + Layout sạch)
+      const harmonicThemes = [
+        { glassFinish: 'light', glassOpacity: 66, accentColor: '#5B4FE8', accentColor2: '#8174F8', ambientType: 'none' },
+        { glassFinish: 'light', glassOpacity: 68, accentColor: '#E14B82', accentColor2: '#F472A0', ambientType: 'sparkle' },
+        { glassFinish: 'dark',  glassOpacity: 50, accentColor: '#E5B84B', accentColor2: '#F6D57E', ambientType: 'bokeh' },
+        { glassFinish: 'light', glassOpacity: 70, accentColor: '#F26B2E', accentColor2: '#FB923C', ambientType: 'none' },
+        { glassFinish: 'light', glassOpacity: 66, accentColor: '#109A72', accentColor2: '#34C79B', ambientType: 'sparkle' },
+        { glassFinish: 'dark',  glassOpacity: 52, accentColor: '#7C6BF2', accentColor2: '#A78BFA', ambientType: 'bokeh' },
+        { glassFinish: 'light', glassOpacity: 66, accentColor: '#C92A3E', accentColor2: '#E85568', ambientType: 'snow' },
+      ];
+      const pick = harmonicThemes[Math.floor(Math.random() * harmonicThemes.length)];
+      const headers = ['editorial', 'mega-sale', 'minimal-pill'];
+      const layouts = ['spotlight', 'shelf-3', 'slim-pill'];
+
+      state.activePresetId = 'smart-mix';
+      state.glassFinish = pick.glassFinish;
+      state.glassOpacity = pick.glassOpacity;
+      state.accentColor = pick.accentColor;
+      state.accentColor2 = pick.accentColor2;
+      state.ambientType = pick.ambientType;
+      state.headerStyle = headers[Math.floor(Math.random() * headers.length)];
+      state.cardLayout = layouts[Math.floor(Math.random() * layouts.length)];
+
+      hydrateAll();
+      saveAndSync();
+      triggerPriceHighlight();
+      showToast('🎲 Đã Tự Mix Tinh Tế một diện mạo kính mờ mới!', 'indigo');
+    }
+
+    function setGlassFinish(finish) {
+      state.glassFinish = finish;
+      // Tự điều chỉnh độ đục tối ưu khi chuyển Sáng/Tối nếu đang ở mức cực đoan
+      if (finish === 'dark' && state.glassOpacity > 62) state.glassOpacity = 50;
+      if (finish === 'light' && state.glassOpacity < 54) state.glassOpacity = 66;
+      hydrateAll();
+      saveAndSync();
+    }
+
+    function updateGlassSliders() {
+      state.glassBlur = Number(document.getElementById('rng-blur').value);
+      state.glassOpacity = Number(document.getElementById('rng-opacity').value);
+      state.cardBottomPct = Number(document.getElementById('rng-card-pos').value);
+      document.getElementById('val-blur').textContent = `${state.glassBlur}px`;
+      document.getElementById('val-opacity').textContent = `${state.glassOpacity}%`;
+      document.getElementById('val-card-pos').textContent = `${state.cardBottomPct}%`;
+      applyVisualTokens();
+      renderZoneProductShowcase();
+      saveAndSync();
+    }
+
+    function setAccentSwatch(hex, hex2) {
+      state.accentColor = hex;
+      state.accentColor2 = hex2 || lightenHex(hex, 34);
+      document.getElementById('in-custom-accent').value = hex;
+      applyVisualTokens();
+      renderAllStageZones();
+      renderAdminPanel();
+      saveAndSync();
+    }
+
+    function setCustomAccent(hex) {
+      setAccentSwatch(hex, lightenHex(hex, 34));
+    }
+
+    function setHeaderStyle(id) { state.headerStyle = id; state.showHeader = id !== 'hidden'; renderZoneHeader(); renderAdminPanel(); renderQuickToggles(); saveAndSync(); }
+    function setCardLayout(id) { state.cardLayout = id; renderZoneProductShowcase(); renderAdminPanel(); saveAndSync(); }
+    function setBottomBarMode(id) { state.bottomBarMode = id; state.showBottomBar = id !== 'hidden'; renderZoneBottomBar(); renderAdminPanel(); renderQuickToggles(); saveAndSync(); }
+
+    function setAmbientType(type) {
+      state.ambientType = type;
+      rebuildAmbientPool(true);
+      renderAdminPanel();
+      renderQuickToggles();
+      saveAndSync();
+    }
+
+    function updateAmbientSliders() {
+      state.ambientDensity = Number(document.getElementById('rng-p-density').value);
+      state.ambientOpacity = Number(document.getElementById('rng-p-opacity').value);
+      document.getElementById('val-p-density').textContent = state.ambientDensity;
+      document.getElementById('val-p-opacity').textContent = `${state.ambientOpacity}%`;
+      rebuildAmbientPool(true);
+      saveAndSync();
+    }
+
+    function syncCustomEmojis(v) {
+      state.customEmojis = v;
+      rebuildAmbientPool(true);
+      saveAndSync();
+    }
+
+    function syncContentInputs() {
+      state.shopName = document.getElementById('in-shop-name').value || 'SHOP OFFICIAL';
+      state.campaignTitle = document.getElementById('in-campaign-title').value;
+      state.campaignSub = document.getElementById('in-campaign-sub').value;
+      state.hostName = document.getElementById('in-host-name').value;
+      state.hostSub = document.getElementById('in-host-sub').value;
+      state.followTitle = document.getElementById('in-follow-title').value;
+      state.followSub = document.getElementById('in-follow-sub').value;
+      state.v1Top = document.getElementById('in-v1-top').value;
+      state.v1Val = document.getElementById('in-v1-val').value;
+      state.v2Top = document.getElementById('in-v2-top').value;
+      state.v2Val = document.getElementById('in-v2-val').value;
+      state.v3Top = document.getElementById('in-v3-top').value;
+      state.v3Val = document.getElementById('in-v3-val').value;
+      state.trust1 = document.getElementById('in-trust-1').value;
+      state.trust2 = document.getElementById('in-trust-2').value;
+      state.trust3 = document.getElementById('in-trust-3').value;
+      state.tickerText = document.getElementById('in-ticker-text').value;
+      renderAllStageZones();
+      saveAndSync();
+    }
+
+    /* -------------------------------------------------------------------------
+       10. CAMERA UVC, BACKDROP, SAFE ZONE & OUTPUT WINDOW
+       ------------------------------------------------------------------------- */
+    async function loadCameraDevices() {
+      const sel = document.getElementById('cam-select');
+      if (!navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+      try {
+        const list = (await navigator.mediaDevices.enumerateDevices()).filter(d => d.kind === 'videoinput');
+        const prev = sel.value;
+        sel.innerHTML = list.length ? '' : '<option value="">Chưa thấy Camera UVC</option>';
+        list.forEach((d, idx) => {
+          const opt = document.createElement('option');
+          opt.value = d.deviceId;
+          opt.textContent = d.label || `Camera UVC ${idx + 1}`;
+          sel.appendChild(opt);
+        });
+        if (prev && [...sel.options].some(o => o.value === prev)) sel.value = prev;
+      } catch (e) { /* Ignore */ }
+    }
+
+    async function startCamera(deviceId = '') {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        showToast('Trình duyệt không hỗ trợ Camera. Đang hiển thị Phòng Trắng Studio.', 'amber');
+        return;
+      }
+      stopCamera(false);
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: deviceId
+            ? { deviceId: { exact: deviceId }, width: { ideal: 1920 }, height: { ideal: 1080 } }
+            : { width: { ideal: 1920 }, height: { ideal: 1080 } },
+          audio: false,
+        });
+        camStream = stream;
+        isCamActive = true;
+        const vid = document.getElementById('webcam-video');
+        vid.srcObject = stream;
+        vid.classList.remove('hidden');
+        document.getElementById('studio-hint').classList.add('hidden');
+        updateCamButton();
+        await loadCameraDevices();
+        const track = stream.getVideoTracks()[0];
+        if (track) {
+          const id = track.getSettings().deviceId;
+          if (id) document.getElementById('cam-select').value = id;
+          showToast(`Đã bật Camera: ${track.label || 'UVC'}`, 'emerald');
+        }
+      } catch (err) {
+        isCamActive = false;
+        updateCamButton();
+        showToast('Không thể mở Camera (kiểm tra quyền hoặc dây USB-C Pocket 4P).', 'amber');
+      }
+    }
+
+    function stopCamera(notify = true) {
+      if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
+      isCamActive = false;
+      const vid = document.getElementById('webcam-video');
+      vid.srcObject = null;
+      vid.classList.add('hidden');
+      if (state.backdrop === 'white-studio') document.getElementById('studio-hint').classList.remove('hidden');
+      updateCamButton();
+      if (notify) showToast('Đã tắt Camera', 'zinc');
+    }
+
+    function toggleCamera() {
+      if (isCamActive) stopCamera(true);
+      else startCamera(document.getElementById('cam-select').value);
+    }
+
+    function switchCamera(id) { if (isCamActive && id) startCamera(id); }
+
+    function updateCamButton() {
+      const btn = document.getElementById('btn-cam');
+      const dot = document.getElementById('cam-dot');
+      const txt = document.getElementById('cam-btn-text');
+      if (isCamActive) {
+        btn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-rose-500/20 hover:bg-rose-500/30 text-rose-200 border border-rose-500/35 transition cursor-pointer';
+        dot.className = 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse';
+        txt.textContent = 'Tắt Camera';
+      } else {
+        btn.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 transition cursor-pointer';
+        dot.className = 'w-2 h-2 rounded-full bg-zinc-500';
+        txt.textContent = 'Bật Camera';
+      }
+    }
+
+    function toggleMirror() {
+      isMirrored = !isMirrored;
+      document.getElementById('webcam-video').style.transform = isMirrored ? 'scaleX(-1)' : 'scaleX(1)';
+      document.getElementById('btn-mirror').classList.toggle('bg-indigo-500/25', isMirrored);
+      document.getElementById('btn-mirror').classList.toggle('text-indigo-200', isMirrored);
+    }
+
+    function setBackdrop(mode) {
+      state.backdrop = mode;
+      const bd = document.getElementById('stage-backdrop');
+      const hint = document.getElementById('studio-hint');
+      bd.className = `absolute inset-0 transition-all duration-300 bg-${mode}`;
+      hint.classList.toggle('hidden', mode !== 'white-studio' || isCamActive);
+      ['white-studio', 'soft-gray', 'chroma-green', 'transparent-grid'].forEach(m => {
+        const b = document.getElementById(`bg-${m}`);
+        if (!b) return;
+        b.className = m === mode
+          ? 'px-2 py-1 rounded-lg font-bold bg-zinc-700 text-white shadow cursor-pointer'
+          : 'px-2 py-1 rounded-lg font-medium text-zinc-400 hover:text-white cursor-pointer';
+      });
+      saveAndSync();
+    }
+
+    function toggleSafeZone(force) {
+      state.showSafeZone = typeof force === 'boolean' ? force : !state.showSafeZone;
+      document.getElementById('safe-zone-overlay').classList.toggle('hidden', !state.showSafeZone);
+      const btn = document.getElementById('btn-safe-top');
+      if (btn) {
+        btn.classList.toggle('bg-sky-500/25', state.showSafeZone);
+        btn.classList.toggle('text-sky-200', state.showSafeZone);
+        btn.classList.toggle('border-sky-400/40', state.showSafeZone);
+      }
+      renderQuickToggles();
+      saveAndSync();
+    }
+
+    function setCleanView(on) {
+      document.body.classList.toggle('clean-view', on);
+      setTimeout(resizeFxCanvas, 60);
+      if (on) showToast('Clean View toàn màn hình — Bấm ESC để quay lại', 'indigo');
+    }
+
+    function openOutputWindow() {
+      try {
+        const u = new URL(window.location.href);
+        u.searchParams.set('mode', 'output');
+        const w = window.open(u.toString(), 'PocketLiveGlassOutput', 'width=450,height=800,menubar=no,toolbar=no');
+        if (!w) showToast('Hãy mở file HTML trực tiếp bằng Chrome/Edge để bật cửa sổ Output rời, hoặc dùng Clean View!', 'amber');
+        else showToast('Đã mở Cửa sổ Output 9:16 rời — Đồng bộ thời gian thực!', 'emerald');
+      } catch (e) {
+        showToast('Hãy mở file HTML trực tiếp trên trình duyệt để bật cửa sổ Output rời.', 'amber');
+      }
+    }
+
+    /* -------------------------------------------------------------------------
+       11. RENDER CONTROL PANEL UI (MODE 1 & MODE 2)
+       ------------------------------------------------------------------------- */
+    function switchMode(mode) {
+      const isLive = mode === 'live';
+      document.getElementById('panel-live').classList.toggle('hidden', !isLive);
+      document.getElementById('panel-admin').classList.toggle('hidden', isLive);
+      document.getElementById('tab-live').className = isLive
+        ? 'py-2 px-2 rounded-lg text-xs font-bold transition cursor-pointer bg-zinc-800 text-white shadow'
+        : 'py-2 px-2 rounded-lg text-xs font-bold transition cursor-pointer text-zinc-400 hover:text-white';
+      document.getElementById('tab-admin').className = !isLive
+        ? 'py-2 px-2 rounded-lg text-xs font-bold transition cursor-pointer bg-zinc-800 text-white shadow'
+        : 'py-2 px-2 rounded-lg text-xs font-bold transition cursor-pointer text-zinc-400 hover:text-white';
+    }
+
+    function updateFinishButtonsUI() {
+      const isLight = state.glassFinish === 'light';
+      ['live', 'admin'].forEach(prefix => {
+        const bl = document.getElementById(`${prefix}-finish-light`);
+        const bd = document.getElementById(`${prefix}-finish-dark`);
+        if (!bl || !bd) return;
+        bl.className = isLight
+          ? 'py-1.5 rounded-lg text-[11px] font-bold transition cursor-pointer bg-white text-zinc-900 shadow'
+          : 'py-1.5 rounded-lg text-[11px] font-semibold transition cursor-pointer text-zinc-400 hover:text-white';
+        bd.className = !isLight
+          ? 'py-1.5 rounded-lg text-[11px] font-bold transition cursor-pointer bg-zinc-700 text-white shadow'
+          : 'py-1.5 rounded-lg text-[11px] font-semibold transition cursor-pointer text-zinc-400 hover:text-white';
+      });
+    }
+
+    function renderLivePresets() {
+      const box = document.getElementById('live-presets-grid');
+      const all = [...BUILTIN_PRESETS, ...state.customPresets];
+      box.innerHTML = all.map(p => {
+        const active = state.activePresetId === p.id;
+        return `
+          <button onclick="applyPreset('${p.id}')" class="p-2 rounded-xl border text-left transition active:scale-95 cursor-pointer ${
+            active ? 'bg-zinc-800 border-white/50 shadow-lg' : 'bg-zinc-950/70 hover:bg-zinc-800/70 border-white/[0.08]'
+          }">
+            <div class="flex items-center gap-1.5">
+              <span class="w-3 h-3 rounded-full shrink-0 border border-white/40" style="background:${p.swatch || p.config?.accentColor || '#5B4FE8'};"></span>
+              <span class="font-display text-[11px] font-bold text-white truncate">${esc(p.name)}</span>
+            </div>
+            <div class="text-[9.5px] text-zinc-400 mt-0.5 truncate">${esc(p.tag || 'Media lưu')}</div>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function renderLiveProducts() {
+      const box = document.getElementById('live-product-list');
+      if (!state.products.length) {
+        box.innerHTML = `<div class="text-center py-4 text-xs text-zinc-400">Chưa có sản phẩm. Vào tab Media Admin để thêm.</div>`;
+        return;
+      }
+      box.innerHTML = state.products.map((p, idx) => {
+        const active = p.id === state.activeProductId;
+        const disc = calcDiscount(p.originalPrice, p.livePrice);
+        return `
+          <button onclick="selectProduct('${p.id}')" class="w-full flex items-center gap-2.5 p-2 rounded-xl border text-left transition active:scale-[0.99] cursor-pointer ${
+            active ? 'bg-zinc-800/95 border-indigo-400/70 shadow-md' : 'bg-zinc-950/65 hover:bg-zinc-800/70 border-white/[0.08]'
+          }">
+            <div class="w-10 h-10 rounded-xl bg-white/90 p-1 flex items-center justify-center shrink-0 overflow-hidden">
+              ${renderProductVisual(p, true)}
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="flex items-center justify-between gap-1">
+                <span class="text-[10px] font-bold ${active ? 'text-indigo-300' : 'text-zinc-400'}">${esc(p.code)}</span>
+                <div class="flex items-center gap-1">
+                  ${active ? '<span class="px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 text-[8.5px] font-bold">ĐANG HIỆN</span>' : ''}
+                  ${idx < 9 ? `<span class="px-1.5 py-0.5 rounded bg-zinc-900 text-[9px] font-mono text-zinc-300 border border-white/10">${idx + 1}</span>` : ''}
+                </div>
+              </div>
+              <div class="text-xs font-semibold text-white truncate">${esc(p.name)}</div>
+              <div class="flex items-center gap-2 mt-0.5">
+                <span class="text-xs font-bold text-indigo-300">${formatVND(p.livePrice)}</span>
+                ${disc > 0 ? `<span class="text-[10px] text-rose-400 font-bold">-${disc}%</span>` : ''}
+              </div>
+            </div>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function renderQuickToggles() {
+      const items = [
+        { key: 'showHeader',        label: 'Tiêu đề Header',    on: state.showHeader && state.headerStyle !== 'hidden' },
+        { key: 'showLeftBadges',    label: 'Tag Host & Follow', on: state.showLeftBadges },
+        { key: 'showRightVouchers', label: 'Cụm Voucher phải',  on: state.showRightVouchers },
+        { key: 'showBottomBar',     label: 'Thanh Quyền lợi',   on: state.showBottomBar && state.bottomBarMode !== 'hidden' },
+        { key: 'ambientToggle',     label: 'Hiệu ứng rơi nhẹ',  on: state.ambientType !== 'none' },
+        { key: 'safeZoneToggle',    label: 'Khung TikTok [S]',  on: state.showSafeZone },
+      ];
+      document.getElementById('quick-toggles-grid').innerHTML = items.map(it => `
+        <button onclick="handleQuickToggle('${it.key}')" class="flex items-center justify-between px-2.5 py-2 rounded-xl border text-[11px] font-semibold transition cursor-pointer ${
+          it.on ? 'bg-indigo-500/18 border-indigo-400/40 text-indigo-100' : 'bg-zinc-950/70 border-white/[0.08] text-zinc-400 hover:text-zinc-200'
+        }">
+          <span class="truncate">${it.label}</span>
+          <span class="w-2 h-2 rounded-full shrink-0 ml-1.5 ${it.on ? 'bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]' : 'bg-zinc-600'}"></span>
+        </button>
+      `).join('');
+    }
+
+    function handleQuickToggle(key) {
+      if (key === 'safeZoneToggle') { toggleSafeZone(); return; }
+      if (key === 'ambientToggle') {
+        state.ambientType = state.ambientType === 'none' ? 'sparkle' : 'none';
+        rebuildAmbientPool(true);
+        renderAdminPanel();
+        renderQuickToggles();
+        saveAndSync();
+        return;
+      }
+      state[key] = !state[key];
+      if (key === 'showHeader' && state.showHeader && state.headerStyle === 'hidden') state.headerStyle = 'editorial';
+      if (key === 'showBottomBar' && state.showBottomBar && state.bottomBarMode === 'hidden') state.bottomBarMode = 'trust-3';
+      renderAllStageZones();
+      renderQuickToggles();
+      renderAdminPanel();
+      saveAndSync();
+    }
+
+    function renderAdminPanel() {
+      updateFinishButtonsUI();
+
+      // Accent Swatches
+      document.getElementById('admin-accent-swatches').innerHTML = ACCENT_SWATCHES.map(sw => {
+        const active = state.accentColor.toLowerCase() === sw.hex.toLowerCase();
+        return `<button onclick="setAccentSwatch('${sw.hex}','${sw.hex2}')" title="${sw.label}" style="background:${sw.hex}" class="w-5 h-5 rounded-full ring-2 ring-offset-2 ring-offset-zinc-900 transition cursor-pointer ${active ? 'ring-white scale-110' : 'ring-transparent opacity-80 hover:opacity-100'}"></button>`;
+      }).join('');
+      document.getElementById('in-custom-accent').value = state.accentColor;
+
+      // Header Styles
+      document.getElementById('admin-header-styles').innerHTML = HEADER_OPTIONS.map(o => {
+        const active = state.headerStyle === o.id;
+        return `<button onclick="setHeaderStyle('${o.id}')" class="py-1.5 px-2.5 rounded-xl text-[11px] font-semibold border text-left transition cursor-pointer ${
+          active ? 'bg-indigo-500/20 border-indigo-400/60 text-white' : 'bg-zinc-950/75 border-white/10 text-zinc-400 hover:text-white'
+        }">${o.label}</button>`;
+      }).join('');
+
+      // Card Layouts
+      document.getElementById('admin-card-layouts').innerHTML = CARD_LAYOUT_OPTIONS.map(o => {
+        const active = state.cardLayout === o.id;
+        return `<button onclick="setCardLayout('${o.id}')" class="py-1.5 px-2 rounded-xl text-[10.5px] font-semibold border text-center transition cursor-pointer ${
+          active ? 'bg-indigo-500/20 border-indigo-400/60 text-white' : 'bg-zinc-950/75 border-white/10 text-zinc-400 hover:text-white'
+        }">${o.label}</button>`;
+      }).join('');
+
+      // Bottom Modes
+      document.getElementById('admin-bottom-modes').innerHTML = BOTTOM_BAR_OPTIONS.map(o => {
+        const active = state.bottomBarMode === o.id;
+        return `<button onclick="setBottomBarMode('${o.id}')" class="py-1.5 px-2 rounded-xl text-[10.5px] font-semibold border text-center transition cursor-pointer ${
+          active ? 'bg-indigo-500/20 border-indigo-400/60 text-white' : 'bg-zinc-950/75 border-white/10 text-zinc-400 hover:text-white'
+        }">${o.label}</button>`;
+      }).join('');
+
+      // Ambient FX Grid
+      document.getElementById('admin-ambient-grid').innerHTML = AMBIENT_OPTIONS.map(o => {
+        const active = state.ambientType === o.id;
+        return `<button onclick="setAmbientType('${o.id}')" class="py-1.5 px-2 rounded-xl border text-center transition cursor-pointer ${
+          active ? 'bg-indigo-500/20 border-indigo-400/60 text-white' : 'bg-zinc-950/75 border-white/10 text-zinc-400 hover:text-white'
+        }"><span class="text-xs mr-1">${o.icon}</span><span class="text-[10.5px] font-semibold">${o.label}</span></button>`;
+      }).join('');
+
+      document.getElementById('admin-custom-particle-box').classList.toggle('hidden', state.ambientType !== 'custom');
+
+      // Asset Previews
+      document.getElementById('preview-logo').innerHTML = state.brandLogo ? `<img src="${state.brandLogo}" class="w-full h-full object-cover" />` : 'Logo';
+      document.getElementById('preview-frame-png').innerHTML = state.customFramePng ? `<img src="${state.customFramePng}" class="w-full h-full object-contain" />` : '9:16';
+      document.getElementById('preview-p-png').innerHTML = state.customParticlePng ? `<img src="${state.customParticlePng}" class="w-full h-full object-contain" />` : 'PNG';
+
+      renderAdminSavedPresets();
+      renderAdminProducts();
+    }
+
+    function renderAdminSavedPresets() {
+      const box = document.getElementById('admin-saved-presets');
+      box.innerHTML = state.customPresets.map(p => `
+        <div class="flex items-center justify-between bg-zinc-950/80 border border-white/10 rounded-xl px-2.5 py-1.5 text-xs">
+          <span class="font-semibold text-indigo-200 truncate">⭐ ${esc(p.name)}</span>
+          <button onclick="deleteSavedPreset('${p.id}')" class="text-[10.5px] text-rose-400 hover:underline cursor-pointer ml-2">Xóa</button>
+        </div>
+      `).join('');
+    }
+
+    function renderAdminProducts() {
+      document.getElementById('admin-prod-count').textContent = state.products.length;
+      document.getElementById('admin-product-list').innerHTML = state.products.map(p => {
+        const confirming = confirmDeleteId === p.id;
+        return `
+          <div class="flex items-center gap-2 p-2 rounded-xl bg-zinc-950/75 border border-white/[0.08]">
+            <div class="w-9 h-9 rounded-lg bg-white/90 p-1 flex items-center justify-center shrink-0 overflow-hidden">${renderProductVisual(p, true)}</div>
+            <div class="flex-1 min-w-0">
+              <div class="text-[10px] font-bold text-indigo-300">${esc(p.code)}</div>
+              <div class="text-xs font-semibold text-white truncate">${esc(p.name)}</div>
+              <div class="text-[10px] text-zinc-400">${formatVND(p.livePrice)}</div>
+            </div>
+            <button onclick="editProduct('${p.id}')" class="px-2 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-[10px] font-semibold text-zinc-200 cursor-pointer">Sửa</button>
+            <button onclick="deleteProduct('${p.id}')" class="px-2 py-1 rounded-lg text-[10px] font-semibold cursor-pointer ${confirming ? 'bg-rose-600 text-white' : 'bg-rose-500/15 text-rose-300'}">${confirming ? 'Xóa?' : 'Xóa'}</button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    /* -------------------------------------------------------------------------
+       12. ASSETS, PRODUCT CRUD, PRESET SAVER & JSON EXPORT/IMPORT
+       ------------------------------------------------------------------------- */
+    function loadParticleImageObj() {
+      if (state.customParticlePng) {
+        const img = new Image();
+        img.src = state.customParticlePng;
+        customParticleImg = img;
+      } else customParticleImg = null;
+    }
+
+    function uploadImageAsset(event, field, maxDim = 400, keepAlpha = true) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          let w = img.width, h = img.height;
+          if (w > maxDim || h > maxDim) {
+            if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+            else { w = Math.round((w * maxDim) / h); h = maxDim; }
+          }
+          const c = document.createElement('canvas');
+          c.width = w; c.height = h;
+          c.getContext('2d').drawImage(img, 0, 0, w, h);
+          state[field] = keepAlpha ? c.toDataURL('image/png') : c.toDataURL('image/jpeg', 0.85);
+          if (field === 'customParticlePng') loadParticleImageObj();
+          renderAllStageZones();
+          renderCustomFrameOverlay();
+          renderAdminPanel();
+          saveAndSync();
+          showToast('Đã tải hình ảnh thành công!', 'emerald');
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+      event.target.value = '';
+    }
+
+    function clearImageAsset(field) {
+      state[field] = '';
+      if (field === 'customParticlePng') customParticleImg = null;
+      renderAllStageZones();
+      renderCustomFrameOverlay();
+      renderAdminPanel();
+      saveAndSync();
+    }
+
+    function selectProduct(id) {
+      state.activeProductId = state.activeProductId === id ? null : id;
+      renderZoneProductShowcase();
+      renderLiveProducts();
+      saveAndSync();
+    }
+
+    function hideActiveProduct() {
+      if (!state.activeProductId) return;
+      state.activeProductId = null;
+      renderZoneProductShowcase();
+      renderLiveProducts();
+      saveAndSync();
+    }
+
+    function handleProductImageUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const isPng = file.type === 'image/png' || file.type === 'image/webp';
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const max = 380;
+          let w = img.width, h = img.height;
+          if (w > max || h > max) {
+            if (w > h) { h = Math.round((h * max) / w); w = max; }
+            else { w = Math.round((w * max) / h); h = max; }
+          }
+          const c = document.createElement('canvas');
+          c.width = w; c.height = h;
+          c.getContext('2d').drawImage(img, 0, 0, w, h);
+          formPhotoData = isPng ? c.toDataURL('image/png') : c.toDataURL('image/jpeg', 0.86);
+          document.getElementById('f-photo-preview').innerHTML = `<img src="${formPhotoData}" class="w-full h-full object-contain" />`;
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function clearProductFormPhoto() {
+      formPhotoData = '';
+      document.getElementById('f-photo-file').value = '';
+      document.getElementById('f-photo-preview').innerHTML = 'Mẫu';
+    }
+
+    function saveProductForm() {
+      const editId = document.getElementById('edit-prod-id').value;
+      const code = document.getElementById('f-code').value.trim();
+      const name = document.getElementById('f-name').value.trim();
+      const tagsRaw = document.getElementById('f-tags').value.trim();
+      const orig = Number(document.getElementById('f-orig').value) || 0;
+      const live = Number(document.getElementById('f-live').value) || 0;
+
+      if (!code || !name || live <= 0) {
+        showToast('Nhập đủ Mã SP, Tên sản phẩm và Giá Live hợp lệ!', 'amber');
+        return;
+      }
+      const tags = tagsRaw ? tagsRaw.split(/[•,]/).map(s => s.trim()).filter(Boolean).slice(0, 2) : [];
+
+      if (editId) {
+        const i = state.products.findIndex(p => p.id === editId);
+        if (i !== -1) {
+          state.products[i] = { ...state.products[i], code, name, tags, originalPrice: orig, livePrice: live, customImage: formPhotoData };
+          showToast(`Đã cập nhật ${code}`, 'emerald');
+        }
+      } else {
+        const types = ['serum-amber', 'sunscreen', 'cleanser-duo', 'mist'];
+        state.products.push({
+          id: 'p-' + Date.now(),
+          code, name, tags, originalPrice: orig, livePrice: live,
+          svgType: types[state.products.length % types.length],
+          customImage: formPhotoData,
+        });
+        showToast(`Đã thêm ${code}`, 'emerald');
+      }
+      resetProductForm();
+      renderLiveProducts();
+      renderAdminProducts();
+      renderZoneProductShowcase();
+      saveAndSync();
+    }
+
+    function editProduct(id) {
+      const p = state.products.find(x => x.id === id);
+      if (!p) return;
+      document.getElementById('edit-prod-id').value = p.id;
+      document.getElementById('f-code').value = p.code;
+      document.getElementById('f-name').value = p.name;
+      document.getElementById('f-tags').value = (p.tags || []).join(' • ');
+      document.getElementById('f-orig').value = p.originalPrice || '';
+      document.getElementById('f-live').value = p.livePrice || '';
+      formPhotoData = p.customImage || '';
+      document.getElementById('f-photo-preview').innerHTML = formPhotoData ? `<img src="${formPhotoData}" class="w-full h-full object-contain" />` : 'Mẫu';
+      document.getElementById('prod-form-title').textContent = `Đang sửa: ${p.code}`;
+      document.getElementById('btn-cancel-edit').classList.remove('hidden');
+    }
+
+    function resetProductForm() {
+      document.getElementById('edit-prod-id').value = '';
+      document.getElementById('f-code').value = '';
+      document.getElementById('f-name').value = '';
+      document.getElementById('f-tags').value = '';
+      document.getElementById('f-orig').value = '';
+      document.getElementById('f-live').value = '';
+      clearProductFormPhoto();
+      document.getElementById('prod-form-title').innerHTML = `D. Danh Mục Sản Phẩm (<span id="admin-prod-count">${state.products.length}</span>)`;
+      document.getElementById('btn-cancel-edit').classList.add('hidden');
+    }
+
+    function deleteProduct(id) {
+      if (confirmDeleteId !== id) {
+        confirmDeleteId = id;
+        renderAdminProducts();
+        setTimeout(() => { if (confirmDeleteId === id) { confirmDeleteId = null; renderAdminProducts(); } }, 3000);
+        return;
+      }
+      confirmDeleteId = null;
+      state.products = state.products.filter(p => p.id !== id);
+      if (state.activeProductId === id) state.activeProductId = null;
+      renderLiveProducts();
+      renderAdminProducts();
+      renderZoneProductShowcase();
+      saveAndSync();
+      showToast('Đã xóa sản phẩm', 'zinc');
+    }
+
+    function saveCurrentAsPreset() {
+      const inp = document.getElementById('in-preset-label');
+      const name = inp.value.trim();
+      if (!name) { showToast('Nhập tên Preset trước khi lưu!', 'amber'); return; }
+      const item = {
+        id: 'cp-' + Date.now(),
+        name,
+        swatch: state.accentColor,
+        tag: state.glassFinish === 'light' ? 'Kính sáng • Tự lưu' : 'Kính khói • Tự lưu',
+        config: {
+          glassFinish: state.glassFinish,
+          glassBlur: state.glassBlur,
+          glassOpacity: state.glassOpacity,
+          accentColor: state.accentColor,
+          accentColor2: state.accentColor2,
+          headerStyle: state.headerStyle,
+          cardLayout: state.cardLayout,
+          bottomBarMode: state.bottomBarMode,
+          cardBottomPct: state.cardBottomPct,
+          ambientType: state.ambientType,
+          ambientDensity: state.ambientDensity,
+          ambientOpacity: state.ambientOpacity,
+          campaignTitle: state.campaignTitle,
+          campaignSub: state.campaignSub,
+        },
+      };
+      state.customPresets.unshift(item);
+      state.activePresetId = item.id;
+      inp.value = '';
+      renderLivePresets();
+      renderAdminSavedPresets();
+      saveAndSync();
+      showToast(`Đã lưu "${name}" vào chọn nhanh cho Nhân viên!`, 'emerald');
+    }
+
+    function deleteSavedPreset(id) {
+      state.customPresets = state.customPresets.filter(p => p.id !== id);
+      renderLivePresets();
+      renderAdminSavedPresets();
+      saveAndSync();
+    }
+
+    function exportJSON() {
+      try {
+        const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `pocketlive-glass-${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        showToast('Đã xuất file kịch bản .JSON!', 'emerald');
+      } catch (e) { showToast('Lỗi xuất file JSON', 'rose'); }
+    }
+
+    function importJSON(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (!data || !Array.isArray(data.products)) throw new Error('Invalid');
+          state = { ...createDefaultState(), ...data };
+          hydrateAll();
+          saveAndSync();
+          showToast(`Đã nạp kịch bản thành công (${state.products.length} sản phẩm)!`, 'emerald');
+        } catch (err) { showToast('File JSON không hợp lệ!', 'rose'); }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    function handleResetDefaults() {
+      const btn = document.getElementById('btn-reset-defaults');
+      if (!confirmResetArmed) {
+        confirmResetArmed = true;
+        btn.textContent = '⚠️ Bấm lần nữa để xác nhận khôi phục';
+        btn.classList.add('bg-rose-600', 'text-white');
+        setTimeout(() => {
+          confirmResetArmed = false;
+          btn.textContent = '↺ Khôi phục mặc định ban đầu';
+          btn.classList.remove('bg-rose-600', 'text-white');
+        }, 3000);
+        return;
+      }
+      confirmResetArmed = false;
+      btn.textContent = '↺ Khôi phục mặc định ban đầu';
+      btn.classList.remove('bg-rose-600', 'text-white');
+      state = createDefaultState();
+      resetFlashSale();
+      hydrateAll();
+      saveAndSync();
+      showToast('Đã khôi phục toàn bộ cài đặt mặc định!', 'indigo');
+    }
+
+    /* -------------------------------------------------------------------------
+       13. SYNC LISTENER, HOTKEYS & BOOTSTRAP
+       ------------------------------------------------------------------------- */
+    if (syncChannel) {
+      syncChannel.onmessage = (ev) => {
+        const m = ev.data;
+        if (!m || !IS_OUTPUT_MODE) return;
+        if (m.type === 'SYNC') {
+          state = { ...createDefaultState(), ...m.state };
+          if (m.flash) {
+            flashTotal = m.flash.flashTotal; flashLeft = m.flash.flashLeft;
+            flashRunning = m.flash.flashRunning; flashActive = m.flash.flashActive;
+          }
+          hydrateAll();
+        } else if (m.type === 'EVENT') {
+          triggerLiveEvent(m.eventType, m.sender, true);
+        } else if (m.type === 'PRICE_SHIMMER') {
+          triggerPriceHighlight(true);
+        } else if (m.type === 'FLASH_TICK') {
+          flashTotal = m.flashTotal; flashLeft = m.flashLeft;
+          flashRunning = m.flashRunning; flashActive = m.flashActive;
+          renderZoneRightVouchers();
+        }
+      };
+    }
+
+    window.addEventListener('storage', (ev) => {
+      if (ev.key === STORAGE_KEY && IS_OUTPUT_MODE) {
+        state = loadState();
+        hydrateAll();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (document.body.classList.contains('clean-view')) setCleanView(false);
+        return;
+      }
+      const tag = document.activeElement?.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+
+      if (e.key >= '1' && e.key <= '9') {
+        const prod = state.products[Number(e.key) - 1];
+        if (prod) selectProduct(prod.id);
+      } else if (e.key === '0') {
+        hideActiveProduct();
+      } else if (e.key.toLowerCase() === 'f') {
+        toggleFlashSale();
+      } else if (e.key.toLowerCase() === 's') {
+        toggleSafeZone();
+      } else if (e.key.toLowerCase() === 'h') {
+        triggerPriceHighlight();
+      }
+    });
+
+    function renderAllStageZones() {
+      renderZoneHeader();
+      renderZoneLeftBadges();
+      renderZoneRightVouchers();
+      renderZoneProductShowcase();
+      renderZoneBottomBar();
+    }
+
+    function hydrateAll() {
+      applyVisualTokens();
+      loadParticleImageObj();
+      renderCustomFrameOverlay();
+
+      if (!IS_OUTPUT_MODE) {
+        document.getElementById('rng-blur').value = state.glassBlur;
+        document.getElementById('rng-opacity').value = state.glassOpacity;
+        document.getElementById('rng-card-pos').value = state.cardBottomPct;
+        document.getElementById('val-blur').textContent = `${state.glassBlur}px`;
+        document.getElementById('val-opacity').textContent = `${state.glassOpacity}%`;
+        document.getElementById('val-card-pos').textContent = `${state.cardBottomPct}%`;
+
+        document.getElementById('rng-p-density').value = state.ambientDensity;
+        document.getElementById('rng-p-opacity').value = state.ambientOpacity;
+        document.getElementById('val-p-density').textContent = state.ambientDensity;
+        document.getElementById('val-p-opacity').textContent = `${state.ambientOpacity}%`;
+        document.getElementById('in-custom-emojis').value = state.customEmojis || '';
+
+        document.getElementById('in-shop-name').value = state.shopName;
+        document.getElementById('in-campaign-title').value = state.campaignTitle;
+        document.getElementById('in-campaign-sub').value = state.campaignSub;
+        document.getElementById('in-host-name').value = state.hostName;
+        document.getElementById('in-host-sub').value = state.hostSub;
+        document.getElementById('in-follow-title').value = state.followTitle;
+        document.getElementById('in-follow-sub').value = state.followSub;
+        document.getElementById('in-v1-top').value = state.v1Top;
+        document.getElementById('in-v1-val').value = state.v1Val;
+        document.getElementById('in-v2-top').value = state.v2Top;
+        document.getElementById('in-v2-val').value = state.v2Val;
+        document.getElementById('in-v3-top').value = state.v3Top;
+        document.getElementById('in-v3-val').value = state.v3Val;
+        document.getElementById('in-trust-1').value = state.trust1;
+        document.getElementById('in-trust-2').value = state.trust2;
+        document.getElementById('in-trust-3').value = state.trust3;
+        document.getElementById('in-ticker-text').value = state.tickerText;
+
+        renderLivePresets();
+        renderLiveProducts();
+        renderQuickToggles();
+        renderAdminPanel();
+      }
+
+      setBackdrop(state.backdrop);
+      toggleSafeZone(state.showSafeZone);
+      renderAllStageZones();
+      updateFlashControls();
+      rebuildAmbientPool(true);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      if (IS_OUTPUT_MODE) {
+        document.body.classList.add('output-mode');
+        document.title = 'PocketLive Glass Output 9:16';
+      }
+
+      hydrateAll();
+      loadCameraDevices();
+
+      resizeFxCanvas();
+      new ResizeObserver(resizeFxCanvas).observe(document.getElementById('live-stage'));
+      window.addEventListener('resize', resizeFxCanvas);
+      requestAnimationFrame(renderFxLoop);
+    });
+  </script>
+</body>
+</html>
